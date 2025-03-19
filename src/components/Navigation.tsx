@@ -24,7 +24,7 @@ const Navigation: React.FC = () => {
     <>
       {/* Mobile Navigation */}
       <div className="md:hidden fixed top-0 left-0 right-0 z-50 px-4 py-3 flex justify-between items-center bg-white shadow-sm">
-        <h1 className="text-xl font-medium">MindQuest AI</h1>
+        <h1 className="text-xl font-medium">Learn AI</h1>
         <button 
           onClick={() => setIsMenuOpen(!isMenuOpen)}
           className="p-2 rounded-full hover:bg-gray-100"
@@ -68,7 +68,7 @@ const Navigation: React.FC = () => {
       {/* Desktop Navigation */}
       <div className="hidden md:flex md:flex-col h-screen w-64 fixed top-0 left-0 bg-background border-r border-border shadow-sm">
         <div className="p-6">
-          <h1 className="text-2xl font-medium">MindQuest AI</h1>
+          <h1 className="text-2xl font-medium">Learn AI</h1>
           <p className="text-muted-foreground text-sm mt-1">AI learning platform</p>
         </div>
 

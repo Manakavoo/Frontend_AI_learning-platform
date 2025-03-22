@@ -1,6 +1,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { SendHorizonal, Bot, User, X, Maximize2, Minimize2 } from 'lucide-react';
+import { SendHorizonal, Bot, User, X, Minimize2 } from 'lucide-react';
+import { sampleVideos } from '../data/sampleData';
 
 interface Message {
   id: string;
@@ -24,7 +25,11 @@ const ChatBot: React.FC<ChatBotProps> = ({ videoId }) => {
   ]);
   const [inputValue, setInputValue] = useState('');
   const [isMinimized, setIsMinimized] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Get current video information for contextualized responses
+  const currentVideo = sampleVideos.find(v => v.id === videoId);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -34,7 +39,86 @@ const ChatBot: React.FC<ChatBotProps> = ({ videoId }) => {
     scrollToBottom();
   }, [messages]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const generateAIResponse = (userQuestion: string) => {
+    // Simulate AI thinking with typing indicator
+    setIsTyping(true);
+    
+    // Get contextual information from the current video
+    const videoContext = currentVideo ? {
+      title: currentVideo.title,
+      category: currentVideo.category,
+      description: currentVideo.description,
+      author: currentVideo.author
+    } : null;
+    
+    // Keywords to detect in user questions
+    const keywordResponses: Record<string, string[]> = {
+      "what is": [
+        `Based on this ${videoContext?.category} video, ${userQuestion.replace('what is', '')} refers to a key concept covered at the beginning of the tutorial.`,
+        `In "${videoContext?.title}", ${userQuestion.replace('what is', '')} is explained as a fundamental concept in ${videoContext?.category}.`
+      ],
+      "how to": [
+        `The video demonstrates ${userQuestion} around timestamp 3:45. ${videoContext?.author} shows a step-by-step approach.`,
+        `To ${userQuestion.replace('how to', '')}, the video recommends following these steps outlined in the middle section of the tutorial.`
+      ],
+      "explain": [
+        `According to the video, ${userQuestion.replace('explain', '')} works by utilizing the principles discussed in the second half of the presentation.`,
+        `${videoContext?.author} explains this in detail during the video. The concept involves several components that work together.`
+      ],
+      "why": [
+        `The reason ${userQuestion.replace('why', '')} is because of the fundamental principles of ${videoContext?.category} discussed in this video.`,
+        `As explained by ${videoContext?.author}, ${userQuestion.replace('why', '')} due to the underlying mechanics covered in the tutorial.`
+      ],
+      "example": [
+        `There's a great example of this at around 5:20 in the video where ${videoContext?.author} demonstrates it with a practical case.`,
+        `The video provides several examples, particularly in the section where ${videoContext?.author} demonstrates practical applications.`
+      ]
+    };
+    
+    // Default responses if no keywords match
+    const defaultResponses = [
+      `That's an interesting question about "${videoContext?.title}". The video covers this topic in the middle section.`,
+      `According to the content in this ${videoContext?.category} video, this concept is fundamental to understanding the overall subject.`,
+      `${videoContext?.author} addresses this specifically in the tutorial. I'd recommend focusing on the explanation given around the midpoint of the video.`,
+      `This question relates to the core concepts of ${videoContext?.category} covered in this video. The key point to understand is how these elements interact.`,
+      `Based on the video content, I can tell you that this is an important aspect of what ${videoContext?.author} is teaching in this tutorial.`
+    ];
+    
+    // Find a matching keyword response or use default
+    let response = "";
+    const lowercaseQuestion = userQuestion.toLowerCase();
+    
+    for (const [keyword, responses] of Object.entries(keywordResponses)) {
+      if (lowercaseQuestion.includes(keyword)) {
+        response = responses[Math.floor(Math.random() * responses.length)];
+        break;
+      }
+    }
+    
+    // If no keyword matched, use a default response
+    if (!response) {
+      response = defaultResponses[Math.floor(Math.random() * defaultResponses.length)];
+    }
+    
+    // Add video-specific context to make it more personalized
+    if (videoContext) {
+      if (Math.random() > 0.7) {
+        response += ` If you're interested in learning more about ${videoContext.category}, this video by ${videoContext.author} is an excellent resource.`;
+      }
+    }
+    
+    // Simulate AI processing time (1-2 seconds)
+    const typingDelay = 1000 + Math.random() * 1000;
+    
+    return new Promise<string>(resolve => {
+      setTimeout(() => {
+        setIsTyping(false);
+        resolve(response);
+      }, typingDelay);
+    });
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!inputValue.trim()) return;
@@ -50,27 +134,18 @@ const ChatBot: React.FC<ChatBotProps> = ({ videoId }) => {
     setMessages(prev => [...prev, userMessage]);
     setInputValue('');
     
-    // Simulate bot response
-    setTimeout(() => {
-      const botResponses = [
-        "That's a great question! Let me explain that concept for you.",
-        "I'd recommend checking out the section at 3:45 for more details on that topic.",
-        "This is a complex topic. I can break it down into simpler steps if you'd like.",
-        "I'm not sure about that specific detail, but I can help you find more resources on it.",
-        "That's correct! You've understood the key concept very well."
-      ];
-      
-      const randomResponse = botResponses[Math.floor(Math.random() * botResponses.length)];
-      
-      const botMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        text: randomResponse,
-        sender: 'bot',
-        timestamp: new Date()
-      };
-      
-      setMessages(prev => [...prev, botMessage]);
-    }, 1000);
+    // Generate AI response
+    const aiResponse = await generateAIResponse(inputValue);
+    
+    // Add bot message after AI generates a response
+    const botMessage: Message = {
+      id: (Date.now() + 1).toString(),
+      text: aiResponse,
+      sender: 'bot',
+      timestamp: new Date()
+    };
+    
+    setMessages(prev => [...prev, botMessage]);
   };
 
   const formatTime = (date: Date) => {
@@ -137,6 +212,24 @@ const ChatBot: React.FC<ChatBotProps> = ({ videoId }) => {
             </div>
           </div>
         ))}
+        
+        {/* Typing indicator */}
+        {isTyping && (
+          <div className="flex justify-start">
+            <div className="bg-secondary text-secondary-foreground rounded-2xl rounded-tl-none px-4 py-2.5 max-w-[80%]">
+              <div className="flex items-center gap-2 mb-1">
+                <Bot className="w-4 h-4" />
+                <span className="text-xs font-medium">AI Assistant</span>
+              </div>
+              <div className="flex space-x-1 items-center h-5">
+                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+              </div>
+            </div>
+          </div>
+        )}
+        
         <div ref={messagesEndRef} />
       </div>
       
@@ -152,7 +245,7 @@ const ChatBot: React.FC<ChatBotProps> = ({ videoId }) => {
           <button 
             type="submit" 
             className="absolute right-1 top-1/2 transform -translate-y-1/2 bg-primary text-primary-foreground p-2 rounded-full disabled:opacity-50"
-            disabled={!inputValue.trim()}
+            disabled={!inputValue.trim() || isTyping}
           >
             <SendHorizonal className="w-4 h-4" />
           </button>

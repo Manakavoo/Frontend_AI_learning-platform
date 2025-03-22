@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Home, BarChart, Settings, LogOut, Menu, X } from 'lucide-react';
+import { Home, BarChart, Settings, LogOut, Menu, X, GraduationCap, Users } from 'lucide-react';
 
 const Navigation: React.FC = () => {
   const navigate = useNavigate();
@@ -13,6 +13,8 @@ const Navigation: React.FC = () => {
   const navItems = [
     { path: '/home', name: 'Home', icon: <Home className="w-5 h-5" /> },
     { path: '/dashboard', name: 'Dashboard', icon: <BarChart className="w-5 h-5" /> },
+    { path: '/ai-tutor', name: 'AI Tutor', icon: <GraduationCap className="w-5 h-5" /> },
+    { path: '/community', name: 'Community', icon: <Users className="w-5 h-5" /> },
     { path: '/settings', name: 'Settings', icon: <Settings className="w-5 h-5" /> },
   ];
 

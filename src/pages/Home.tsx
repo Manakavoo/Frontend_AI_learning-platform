@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Navigation from '../components/Navigation';
-import SearchBar from '../components/SearchBar';
+import YouTubeSearch from '../components/YouTubeSearch';
 import VideoCard from '../components/VideoCard';
 import { sampleVideos, categories } from '../data/sampleData';
 
@@ -39,7 +39,7 @@ const Home = () => {
                 <h1 className="text-2xl font-bold">Discover</h1>
                 <p className="text-muted-foreground">Find videos to expand your knowledge</p>
               </div>
-              <SearchBar className="md:max-w-md" />
+              <YouTubeSearch />
             </div>
           </div>
         </header>

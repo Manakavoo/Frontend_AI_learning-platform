@@ -1,20 +1,39 @@
 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Loader2 } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
 
 const Register = () => {
   const navigate = useNavigate();
+  const { register } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [name, setName] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real app, this would validate and register the user
-    console.log('Registration attempted with:', { name, email, password });
-    navigate('/questionnaire');
+    
+    // Basic validation
+    if (password !== confirmPassword) {
+      setError("Passwords don't match");
+      return;
+    }
+    
+    setError(null);
+    setIsLoading(true);
+    
+    try {
+      await register(name, email, password);
+    } catch (err) {
+      console.error(err);
+      setError("Registration failed. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
   };
   
   return (
@@ -27,6 +46,12 @@ const Register = () => {
               Join thousands of learners from around the world
             </p>
           </div>
+          
+          {error && (
+            <div className="bg-destructive/10 text-destructive px-4 py-3 rounded-lg mb-6">
+              {error}
+            </div>
+          )}
           
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-2">
@@ -104,9 +129,16 @@ const Register = () => {
             <button
               type="submit"
               className="btn-primary w-full flex items-center justify-center gap-2 py-3"
+              disabled={isLoading}
             >
-              Create Account
-              <ArrowRight className="w-4 h-4" />
+              {isLoading ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <>
+                  Create Account
+                  <ArrowRight className="w-4 h-4" />
+                </>
+              )}
             </button>
           </form>
           

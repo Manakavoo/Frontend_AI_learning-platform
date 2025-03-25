@@ -1,7 +1,9 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { SendHorizonal, Bot, User, X, Minimize2 } from 'lucide-react';
+import { SendHorizonal, Bot, User, X, Minimize2, Loader2 } from 'lucide-react';
 import { sampleVideos } from '../data/sampleData';
+import { tutorService } from '../services/tutorService';
+import { useToast } from "@/components/ui/use-toast";
 
 interface Message {
   id: string;
@@ -27,6 +29,7 @@ const ChatBot: React.FC<ChatBotProps> = ({ videoId }) => {
   const [isMinimized, setIsMinimized] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { toast } = useToast();
 
   // Get current video information for contextualized responses
   const currentVideo = sampleVideos.find(v => v.id === videoId);
@@ -39,89 +42,19 @@ const ChatBot: React.FC<ChatBotProps> = ({ videoId }) => {
     scrollToBottom();
   }, [messages]);
 
-  const generateAIResponse = (userQuestion: string) => {
-    // Simulate AI thinking with typing indicator
-    setIsTyping(true);
-    
-    // Get contextual information from the current video
-    const videoContext = currentVideo ? {
-      title: currentVideo.title,
-      category: currentVideo.category,
-      description: currentVideo.description,
-      author: currentVideo.author
-    } : null;
-    
-    // Keywords to detect in user questions
-    const keywordResponses: Record<string, string[]> = {
-      "what is": [
-        `Based on this ${videoContext?.category} video, ${userQuestion.replace('what is', '')} refers to a key concept covered at the beginning of the tutorial.`,
-        `In "${videoContext?.title}", ${userQuestion.replace('what is', '')} is explained as a fundamental concept in ${videoContext?.category}.`
-      ],
-      "how to": [
-        `The video demonstrates ${userQuestion} around timestamp 3:45. ${videoContext?.author} shows a step-by-step approach.`,
-        `To ${userQuestion.replace('how to', '')}, the video recommends following these steps outlined in the middle section of the tutorial.`
-      ],
-      "explain": [
-        `According to the video, ${userQuestion.replace('explain', '')} works by utilizing the principles discussed in the second half of the presentation.`,
-        `${videoContext?.author} explains this in detail during the video. The concept involves several components that work together.`
-      ],
-      "why": [
-        `The reason ${userQuestion.replace('why', '')} is because of the fundamental principles of ${videoContext?.category} discussed in this video.`,
-        `As explained by ${videoContext?.author}, ${userQuestion.replace('why', '')} due to the underlying mechanics covered in the tutorial.`
-      ],
-      "example": [
-        `There's a great example of this at around 5:20 in the video where ${videoContext?.author} demonstrates it with a practical case.`,
-        `The video provides several examples, particularly in the section where ${videoContext?.author} demonstrates practical applications.`
-      ]
-    };
-    
-    // Default responses if no keywords match
-    const defaultResponses = [
-      `That's an interesting question about "${videoContext?.title}". The video covers this topic in the middle section.`,
-      `According to the content in this ${videoContext?.category} video, this concept is fundamental to understanding the overall subject.`,
-      `${videoContext?.author} addresses this specifically in the tutorial. I'd recommend focusing on the explanation given around the midpoint of the video.`,
-      `This question relates to the core concepts of ${videoContext?.category} covered in this video. The key point to understand is how these elements interact.`,
-      `Based on the video content, I can tell you that this is an important aspect of what ${videoContext?.author} is teaching in this tutorial.`
-    ];
-    
-    // Find a matching keyword response or use default
-    let response = "";
-    const lowercaseQuestion = userQuestion.toLowerCase();
-    
-    for (const [keyword, responses] of Object.entries(keywordResponses)) {
-      if (lowercaseQuestion.includes(keyword)) {
-        response = responses[Math.floor(Math.random() * responses.length)];
-        break;
-      }
-    }
-    
-    // If no keyword matched, use a default response
-    if (!response) {
-      response = defaultResponses[Math.floor(Math.random() * defaultResponses.length)];
-    }
-    
-    // Add video-specific context to make it more personalized
-    if (videoContext) {
-      if (Math.random() > 0.7) {
-        response += ` If you're interested in learning more about ${videoContext.category}, this video by ${videoContext.author} is an excellent resource.`;
-      }
-    }
-    
-    // Simulate AI processing time (1-2 seconds)
-    const typingDelay = 1000 + Math.random() * 1000;
-    
-    return new Promise<string>(resolve => {
-      setTimeout(() => {
-        setIsTyping(false);
-        resolve(response);
-      }, typingDelay);
-    });
+  const formatMessagesForAPI = (messages: Message[]) => {
+    // Skip the first welcome message
+    const messagesToSend = messages.slice(1);
+    return messagesToSend.map(msg => ({
+      role: msg.sender === 'user' ? 'user' : 'assistant',
+      content: msg.text
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!inputValue.trim()) return;
+    if (!inputValue.trim() || isTyping) return;
     
     // Add user message
     const userMessage: Message = {
@@ -133,19 +66,55 @@ const ChatBot: React.FC<ChatBotProps> = ({ videoId }) => {
     
     setMessages(prev => [...prev, userMessage]);
     setInputValue('');
+    setIsTyping(true);
     
-    // Generate AI response
-    const aiResponse = await generateAIResponse(inputValue);
-    
-    // Add bot message after AI generates a response
-    const botMessage: Message = {
-      id: (Date.now() + 1).toString(),
-      text: aiResponse,
-      sender: 'bot',
-      timestamp: new Date()
-    };
-    
-    setMessages(prev => [...prev, botMessage]);
+    try {
+      // Get message history for context
+      const history = formatMessagesForAPI(messages);
+      
+      // Prepare video context if available
+      const videoContext = currentVideo ? {
+        id: currentVideo.id,
+        title: currentVideo.title,
+        description: currentVideo.description
+      } : undefined;
+      
+      // Call the API
+      const response = await tutorService.sendMessage({
+        message: userMessage.text,
+        history: history,
+        videoContext: videoContext
+      });
+      
+      // Add bot message
+      const botMessage: Message = {
+        id: Date.now().toString(),
+        text: response.response,
+        sender: 'bot',
+        timestamp: new Date()
+      };
+      
+      setMessages(prev => [...prev, botMessage]);
+    } catch (error) {
+      console.error('Error sending message:', error);
+      toast({
+        title: "Error",
+        description: "Failed to get response from AI Assistant.",
+        variant: "destructive",
+      });
+      
+      // Add error message
+      const errorMessage: Message = {
+        id: Date.now().toString(),
+        text: "Sorry, I'm having trouble connecting to the server. Please try again later.",
+        sender: 'bot',
+        timestamp: new Date()
+      };
+      
+      setMessages(prev => [...prev, errorMessage]);
+    } finally {
+      setIsTyping(false);
+    }
   };
 
   const formatTime = (date: Date) => {
@@ -247,7 +216,11 @@ const ChatBot: React.FC<ChatBotProps> = ({ videoId }) => {
             className="absolute right-1 top-1/2 transform -translate-y-1/2 bg-primary text-primary-foreground p-2 rounded-full disabled:opacity-50"
             disabled={!inputValue.trim() || isTyping}
           >
-            <SendHorizonal className="w-4 h-4" />
+            {isTyping ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <SendHorizonal className="w-4 h-4" />
+            )}
           </button>
         </div>
       </form>

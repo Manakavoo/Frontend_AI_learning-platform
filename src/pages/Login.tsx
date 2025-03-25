@@ -1,26 +1,40 @@
 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, Check } from 'lucide-react';
+import { ArrowRight, Check, Loader2 } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
 
 const Login = () => {
   const navigate = useNavigate();
+  const { login, register } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
+    setIsLoading(true);
     
-    if (isLogin) {
-      // In a real app, this would validate and log in the user
-      console.log('Login attempted with:', { email, password });
-      navigate('/home');
-    } else {
-      // In a real app, this would validate and register the user
-      console.log('Registration attempted with:', { name, email, password });
-      navigate('/questionnaire');
+    try {
+      if (isLogin) {
+        await login(email, password);
+      } else {
+        if (!name.trim()) {
+          setError("Name is required");
+          setIsLoading(false);
+          return;
+        }
+        await register(name, email, password);
+      }
+    } catch (err) {
+      console.error(err);
+      setError("Authentication failed. Please check your credentials.");
+    } finally {
+      setIsLoading(false);
     }
   };
   
@@ -38,6 +52,12 @@ const Login = () => {
                 : 'Join thousands of learners from around the world'}
             </p>
           </div>
+          
+          {error && (
+            <div className="bg-destructive/10 text-destructive px-4 py-3 rounded-lg mb-6">
+              {error}
+            </div>
+          )}
           
           <form onSubmit={handleSubmit} className="space-y-5">
             {!isLogin && (
@@ -97,9 +117,16 @@ const Login = () => {
             <button
               type="submit"
               className="btn-primary w-full flex items-center justify-center gap-2 py-3"
+              disabled={isLoading}
             >
-              {isLogin ? 'Sign In' : 'Create Account'}
-              <ArrowRight className="w-4 h-4" />
+              {isLoading ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <>
+                  {isLogin ? 'Sign In' : 'Create Account'}
+                  <ArrowRight className="w-4 h-4" />
+                </>
+              )}
             </button>
           </form>
           

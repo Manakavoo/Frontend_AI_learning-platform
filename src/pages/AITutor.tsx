@@ -1,7 +1,9 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import Navigation from '../components/Navigation';
-import { Bot, User, SendHorizonal } from 'lucide-react';
+import { Bot, User, SendHorizonal, Loader2 } from 'lucide-react';
+import { tutorService } from '../services/tutorService';
+import { useToast } from "@/components/ui/use-toast";
 
 interface Message {
   id: string;
@@ -21,81 +23,51 @@ const AITutor: React.FC = () => {
   ]);
   const [inputValue, setInputValue] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const [conversations, setConversations] = useState<any[]>([]);
+  const [isLoadingConversations, setIsLoadingConversations] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { toast } = useToast();
 
   // Auto-scroll to bottom when messages change
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  const generateTutorResponse = (userQuestion: string) => {
-    // Simulate AI thinking with typing indicator
-    setIsTyping(true);
-    
-    // Keywords to detect in user questions
-    const keywordResponses: Record<string, string[]> = {
-      "learn": [
-        "To learn effectively, I recommend breaking the topic into smaller chunks and practicing regularly. What specific subject are you interested in?",
-        "Learning is a journey! A combination of video tutorials, hands-on practice, and reading materials usually works best. Would you like recommendations for your topic?"
-      ],
-      "recommend": [
-        "Based on your interests, I'd recommend starting with fundamental concepts before moving to advanced topics. Would you like a structured learning path?",
-        "I'd be happy to make some recommendations! To personalize them better, could you tell me about your current knowledge level and goals?"
-      ],
-      "roadmap": [
-        "A good learning roadmap should include theory, practice, and projects. I can help you create one tailored to your goals. What are you looking to achieve?",
-        "Creating a personalized roadmap is a great way to stay focused. Let's start by identifying your current skills and your target expertise level."
-      ],
-      "difficult": [
-        "Many learners find that concept challenging! Breaking it down into smaller parts and practicing with examples often helps. Would you like me to explain it differently?",
-        "When facing difficult concepts, try approaching them from different angles. Visual learners might benefit from diagrams, while others prefer step-by-step explanations."
-      ],
-      "project": [
-        "Working on projects is an excellent way to solidify your learning! For beginners, I suggest starting with guided projects before creating something from scratch.",
-        "Projects are where learning comes alive! Consider choosing something that interests you personally - you'll be more motivated to overcome obstacles."
-      ]
-    };
-    
-    // Default responses
-    const defaultResponses = [
-      "That's an interesting question! To provide the most helpful response, could you share a bit more about your learning goals?",
-      "I'm here to help with your learning journey. Could you elaborate on your question so I can give you more specific guidance?",
-      "As your AI Tutor, I'd be happy to assist with that. To provide tailored advice, it would help to know your current knowledge level in this area.",
-      "Great question! Learning is highly personal, so to give you the best answer, I'd like to know what you're hoping to achieve.",
-      "I can definitely help with that. To make my response more relevant to your needs, could you tell me what you've already tried or learned on this topic?"
-    ];
-    
-    // Find a matching keyword response or use default
-    let response = "";
-    const lowercaseQuestion = userQuestion.toLowerCase();
-    
-    for (const [keyword, responses] of Object.entries(keywordResponses)) {
-      if (lowercaseQuestion.includes(keyword)) {
-        response = responses[Math.floor(Math.random() * responses.length)];
-        break;
+  // Fetch conversations when component mounts
+  useEffect(() => {
+    const fetchConversations = async () => {
+      setIsLoadingConversations(true);
+      try {
+        const conversationsData = await tutorService.getConversations();
+        setConversations(conversationsData);
+      } catch (error) {
+        console.error('Error fetching conversations:', error);
+        toast({
+          title: "Error",
+          description: "Failed to fetch conversations.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoadingConversations(false);
       }
-    }
-    
-    // If no keyword matched, use a default response
-    if (!response) {
-      response = defaultResponses[Math.floor(Math.random() * defaultResponses.length)];
-    }
-    
-    // Simulate AI processing time (1.5-3 seconds)
-    const typingDelay = 1500 + Math.random() * 1500;
-    
-    return new Promise<string>(resolve => {
-      setTimeout(() => {
-        setIsTyping(false);
-        resolve(response);
-      }, typingDelay);
-    });
+    };
+
+    fetchConversations();
+  }, [toast]);
+
+  const formatMessagesForAPI = (messages: Message[]) => {
+    // Skip the first welcome message
+    const messagesToSend = messages.slice(1);
+    return messagesToSend.map(msg => ({
+      role: msg.sender === 'user' ? 'user' : 'assistant',
+      content: msg.text
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!inputValue.trim()) return;
+    if (!inputValue.trim() || isTyping) return;
     
     // Add user message
     const userMessage: Message = {
@@ -107,19 +79,47 @@ const AITutor: React.FC = () => {
     
     setMessages(prev => [...prev, userMessage]);
     setInputValue('');
+    setIsTyping(true);
     
-    // Generate AI response
-    const aiResponse = await generateTutorResponse(inputValue);
-    
-    // Add bot message
-    const botMessage: Message = {
-      id: (Date.now() + 1).toString(),
-      text: aiResponse,
-      sender: 'bot',
-      timestamp: new Date()
-    };
-    
-    setMessages(prev => [...prev, botMessage]);
+    try {
+      // Get message history for context
+      const history = formatMessagesForAPI(messages);
+      
+      // Call the API
+      const response = await tutorService.sendMessage({
+        message: userMessage.text,
+        history: history
+      });
+      
+      // Add bot message
+      const botMessage: Message = {
+        id: Date.now().toString(),
+        text: response.response,
+        sender: 'bot',
+        timestamp: new Date()
+      };
+      
+      setMessages(prev => [...prev, botMessage]);
+    } catch (error) {
+      console.error('Error sending message:', error);
+      toast({
+        title: "Error",
+        description: "Failed to get response from AI Tutor.",
+        variant: "destructive",
+      });
+      
+      // Add error message
+      const errorMessage: Message = {
+        id: Date.now().toString(),
+        text: "Sorry, I'm having trouble connecting to the server. Please try again later.",
+        sender: 'bot',
+        timestamp: new Date()
+      };
+      
+      setMessages(prev => [...prev, errorMessage]);
+    } finally {
+      setIsTyping(false);
+    }
   };
 
   const formatTime = (date: Date) => {
@@ -196,7 +196,11 @@ const AITutor: React.FC = () => {
                     className="absolute right-1 top-1/2 transform -translate-y-1/2 bg-primary text-primary-foreground p-2 rounded-full disabled:opacity-50"
                     disabled={!inputValue.trim() || isTyping}
                   >
-                    <SendHorizonal className="w-4 h-4" />
+                    {isTyping ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <SendHorizonal className="w-4 h-4" />
+                    )}
                   </button>
                 </div>
               </form>
@@ -243,35 +247,61 @@ const AITutor: React.FC = () => {
                 </li>
               </ul>
               
-              <div className="mt-6 pt-6 border-t border-border">
-                <h3 className="font-medium mb-2">Popular Topics</h3>
-                <div className="flex flex-wrap gap-2">
-                  <button 
-                    onClick={() => setInputValue("Help me learn programming")}
-                    className="px-3 py-1.5 bg-secondary rounded-full text-sm hover:bg-secondary/80 transition-colors"
-                  >
-                    Programming
-                  </button>
-                  <button 
-                    onClick={() => setInputValue("I need a data science roadmap")}
-                    className="px-3 py-1.5 bg-secondary rounded-full text-sm hover:bg-secondary/80 transition-colors"
-                  >
-                    Data Science
-                  </button>
-                  <button 
-                    onClick={() => setInputValue("How to learn machine learning?")}
-                    className="px-3 py-1.5 bg-secondary rounded-full text-sm hover:bg-secondary/80 transition-colors"
-                  >
-                    Machine Learning
-                  </button>
-                  <button 
-                    onClick={() => setInputValue("What project should I build to practice web development?")}
-                    className="px-3 py-1.5 bg-secondary rounded-full text-sm hover:bg-secondary/80 transition-colors"
-                  >
-                    Web Development
-                  </button>
+              {isLoadingConversations ? (
+                <div className="mt-6 pt-6 border-t border-border">
+                  <h3 className="font-medium mb-2">Your Conversations</h3>
+                  <div className="flex justify-center py-4">
+                    <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                  </div>
                 </div>
-              </div>
+              ) : conversations.length > 0 ? (
+                <div className="mt-6 pt-6 border-t border-border">
+                  <h3 className="font-medium mb-2">Your Conversations</h3>
+                  <div className="space-y-2">
+                    {conversations.map(conversation => (
+                      <div 
+                        key={conversation.id}
+                        className="p-2 rounded-lg hover:bg-secondary/80 transition-colors cursor-pointer"
+                      >
+                        <p className="text-sm font-medium">{conversation.title}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {new Date(conversation.updatedAt).toLocaleDateString()}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div className="mt-6 pt-6 border-t border-border">
+                  <h3 className="font-medium mb-2">Popular Topics</h3>
+                  <div className="flex flex-wrap gap-2">
+                    <button 
+                      onClick={() => setInputValue("Help me learn programming")}
+                      className="px-3 py-1.5 bg-secondary rounded-full text-sm hover:bg-secondary/80 transition-colors"
+                    >
+                      Programming
+                    </button>
+                    <button 
+                      onClick={() => setInputValue("I need a data science roadmap")}
+                      className="px-3 py-1.5 bg-secondary rounded-full text-sm hover:bg-secondary/80 transition-colors"
+                    >
+                      Data Science
+                    </button>
+                    <button 
+                      onClick={() => setInputValue("How to learn machine learning?")}
+                      className="px-3 py-1.5 bg-secondary rounded-full text-sm hover:bg-secondary/80 transition-colors"
+                    >
+                      Machine Learning
+                    </button>
+                    <button 
+                      onClick={() => setInputValue("What project should I build to practice web development?")}
+                      className="px-3 py-1.5 bg-secondary rounded-full text-sm hover:bg-secondary/80 transition-colors"
+                    >
+                      Web Development
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>

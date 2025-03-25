@@ -35,12 +35,14 @@ interface ConversationsResponse {
 
 export const tutorService = {
   async sendMessage(request: ChatRequest): Promise<ChatResponse> {
-    const response = await api.post<ChatResponse>('/api/tutor/chat', request);
+    // Add trailing slash for consistency
+    const response = await api.post<ChatResponse>('/api/tutor/chat/', request);
     return response.data;
   },
   
   async getConversations(): Promise<Conversation[]> {
-    const response = await api.get<ConversationsResponse>('/api/tutor/conversations');
+    // Add trailing slash for consistency
+    const response = await api.get<ConversationsResponse>('/api/tutor/conversations/');
     return response.data.conversations;
   }
 };

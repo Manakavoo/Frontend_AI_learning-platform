@@ -32,18 +32,21 @@ export const authService = {
   },
   
   async login(data: LoginData): Promise<AuthResponse> {
-    const response = await api.post<AuthResponse>('/api/auth/login', data);
+    // Add trailing slash for consistency
+    const response = await api.post<AuthResponse>('/api/auth/login/', data);
     localStorage.setItem('access_token', response.data.access_token);
     return response.data;
   },
   
   async getUserInfo(): Promise<UserInfo> {
-    const response = await api.post<UserInfo>('/api/auth/me');
+    // Add trailing slash for consistency
+    const response = await api.post<UserInfo>('/api/auth/me/');
     return response.data;
   },
   
   async logout(): Promise<{ success: boolean }> {
-    const response = await api.post<{ success: boolean }>('/api/auth/logout');
+    // Add trailing slash for consistency
+    const response = await api.post<{ success: boolean }>('/api/auth/logout/');
     localStorage.removeItem('access_token');
     return response.data;
   },
@@ -52,3 +55,6 @@ export const authService = {
     return !!localStorage.getItem('access_token');
   }
 };
+
+// Export types for use in other components
+export type { RegisterData, LoginData, AuthResponse, UserInfo };

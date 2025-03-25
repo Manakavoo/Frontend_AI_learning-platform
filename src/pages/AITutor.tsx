@@ -1,8 +1,7 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import Navigation from '../components/Navigation';
 import { Bot, User, SendHorizonal, Loader2 } from 'lucide-react';
-import { tutorService } from '../services/tutorService';
+import { tutorService, Message as ApiMessage } from '../services/tutorService';
 import { useToast } from "@/components/ui/use-toast";
 
 interface Message {
@@ -28,12 +27,10 @@ const AITutor: React.FC = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
-  // Auto-scroll to bottom when messages change
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Fetch conversations when component mounts
   useEffect(() => {
     const fetchConversations = async () => {
       setIsLoadingConversations(true);
@@ -55,8 +52,7 @@ const AITutor: React.FC = () => {
     fetchConversations();
   }, [toast]);
 
-  const formatMessagesForAPI = (messages: Message[]) => {
-    // Skip the first welcome message
+  const formatMessagesForAPI = (messages: Message[]): ApiMessage[] => {
     const messagesToSend = messages.slice(1);
     return messagesToSend.map(msg => ({
       role: msg.sender === 'user' ? 'user' : 'assistant',
@@ -69,7 +65,6 @@ const AITutor: React.FC = () => {
     
     if (!inputValue.trim() || isTyping) return;
     
-    // Add user message
     const userMessage: Message = {
       id: Date.now().toString(),
       text: inputValue,
@@ -82,16 +77,13 @@ const AITutor: React.FC = () => {
     setIsTyping(true);
     
     try {
-      // Get message history for context
       const history = formatMessagesForAPI(messages);
       
-      // Call the API
       const response = await tutorService.sendMessage({
         message: userMessage.text,
         history: history
       });
       
-      // Add bot message
       const botMessage: Message = {
         id: Date.now().toString(),
         text: response.response,
@@ -108,7 +100,6 @@ const AITutor: React.FC = () => {
         variant: "destructive",
       });
       
-      // Add error message
       const errorMessage: Message = {
         id: Date.now().toString(),
         text: "Sorry, I'm having trouble connecting to the server. Please try again later.",
@@ -162,7 +153,6 @@ const AITutor: React.FC = () => {
                   </div>
                 ))}
                 
-                {/* Typing indicator */}
                 {isTyping && (
                   <div className="flex justify-start">
                     <div className="bg-secondary text-secondary-foreground rounded-2xl rounded-tl-none px-4 py-2.5 max-w-[80%]">

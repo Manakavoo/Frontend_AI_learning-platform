@@ -2,7 +2,7 @@
 import api from './api';
 
 interface Message {
-  role: 'user' | 'assistant';
+  role: string;  // Changed from 'user' | 'assistant' to string to match Pydantic model
   content: string;
 }
 

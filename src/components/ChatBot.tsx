@@ -1,8 +1,7 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { SendHorizonal, Bot, User, X, Minimize2, Loader2 } from 'lucide-react';
 import { sampleVideos } from '../data/sampleData';
-import { tutorService } from '../services/tutorService';
+import { tutorService, Message as ApiMessage } from '../services/tutorService';
 import { useToast } from "@/components/ui/use-toast";
 
 interface Message {
@@ -31,7 +30,6 @@ const ChatBot: React.FC<ChatBotProps> = ({ videoId }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
-  // Get current video information for contextualized responses
   const currentVideo = sampleVideos.find(v => v.id === videoId);
 
   const scrollToBottom = () => {
@@ -42,8 +40,7 @@ const ChatBot: React.FC<ChatBotProps> = ({ videoId }) => {
     scrollToBottom();
   }, [messages]);
 
-  const formatMessagesForAPI = (messages: Message[]) => {
-    // Skip the first welcome message
+  const formatMessagesForAPI = (messages: Message[]): ApiMessage[] => {
     const messagesToSend = messages.slice(1);
     return messagesToSend.map(msg => ({
       role: msg.sender === 'user' ? 'user' : 'assistant',
@@ -56,7 +53,6 @@ const ChatBot: React.FC<ChatBotProps> = ({ videoId }) => {
     
     if (!inputValue.trim() || isTyping) return;
     
-    // Add user message
     const userMessage: Message = {
       id: Date.now().toString(),
       text: inputValue,
@@ -69,24 +65,20 @@ const ChatBot: React.FC<ChatBotProps> = ({ videoId }) => {
     setIsTyping(true);
     
     try {
-      // Get message history for context
       const history = formatMessagesForAPI(messages);
       
-      // Prepare video context if available
       const videoContext = currentVideo ? {
         id: currentVideo.id,
         title: currentVideo.title,
         description: currentVideo.description
       } : undefined;
       
-      // Call the API
       const response = await tutorService.sendMessage({
         message: userMessage.text,
         history: history,
         videoContext: videoContext
       });
       
-      // Add bot message
       const botMessage: Message = {
         id: Date.now().toString(),
         text: response.response,
@@ -103,7 +95,6 @@ const ChatBot: React.FC<ChatBotProps> = ({ videoId }) => {
         variant: "destructive",
       });
       
-      // Add error message
       const errorMessage: Message = {
         id: Date.now().toString(),
         text: "Sorry, I'm having trouble connecting to the server. Please try again later.",
@@ -182,7 +173,6 @@ const ChatBot: React.FC<ChatBotProps> = ({ videoId }) => {
           </div>
         ))}
         
-        {/* Typing indicator */}
         {isTyping && (
           <div className="flex justify-start">
             <div className="bg-secondary text-secondary-foreground rounded-2xl rounded-tl-none px-4 py-2.5 max-w-[80%]">

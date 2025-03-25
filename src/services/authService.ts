@@ -25,6 +25,7 @@ interface UserInfo {
 
 export const authService = {
   async register(data: RegisterData): Promise<AuthResponse> {
+    // Make sure the URL matches exactly what the backend expects, including the trailing slash
     const response = await api.post<AuthResponse>('/api/auth/register/', data);
     localStorage.setItem('access_token', response.data.access_token);
     return response.data;

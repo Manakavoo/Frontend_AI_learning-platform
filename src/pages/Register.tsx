@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight, Loader2 } from 'lucide-react';
@@ -27,9 +26,12 @@ const Register = () => {
     setIsLoading(true);
     
     try {
+      console.log("Attempting to register with:", { name, email, password });
       await register(name, email, password);
+      // If we reach here, registration was successful
+      console.log("Registration successful");
     } catch (err) {
-      console.error(err);
+      console.error("Registration error:", err);
       setError("Registration failed. Please try again.");
     } finally {
       setIsLoading(false);

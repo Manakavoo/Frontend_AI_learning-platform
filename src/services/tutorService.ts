@@ -44,3 +44,5 @@ export const tutorService = {
     return response.data.conversations;
   }
 };
+
+export type { Message, VideoContext, ChatRequest, ChatResponse, Conversation };

@@ -1,6 +1,5 @@
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { authService } from '../services/authService';
+import React, { createContext, useContext, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from "@/components/ui/use-toast";
 
@@ -23,46 +22,36 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const navigate = useNavigate();
   const { toast } = useToast();
-
-  useEffect(() => {
-    const checkAuth = async () => {
-      if (authService.isAuthenticated()) {
-        try {
-          const userInfo = await authService.getUserInfo();
-          setUser(userInfo);
-        } catch (error) {
-          console.error('Error fetching user info:', error);
-          localStorage.removeItem('access_token');
-        }
-      }
-      setIsLoading(false);
-    };
-
-    checkAuth();
-  }, []);
 
   const login = async (email: string, password: string) => {
     try {
       setIsLoading(true);
-      await authService.login({ email, password });
-      const userInfo = await authService.getUserInfo();
-      setUser(userInfo);
+      // Simulate login without API call
+      const mockUser = {
+        id: '1',
+        name: email.split('@')[0], // Use part of email as name
+        email: email
+      };
+      
+      // Store a dummy token to simulate authentication
+      localStorage.setItem('access_token', 'dummy-token');
+      setUser(mockUser);
+      
       toast({
         title: "Login successful",
-        description: `Welcome back, ${userInfo.name}!`,
+        description: `Welcome back, ${mockUser.name}!`,
       });
       navigate('/home');
     } catch (error) {
       console.error('Login error:', error);
       toast({
         title: "Login failed",
-        description: "Invalid email or password.",
+        description: "Something went wrong.",
         variant: "destructive",
       });
-      throw error;
     } finally {
       setIsLoading(false);
     }
@@ -71,22 +60,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const register = async (name: string, email: string, password: string) => {
     try {
       setIsLoading(true);
-      await authService.register({ name, email, password });
-      const userInfo = await authService.getUserInfo();
-      setUser(userInfo);
+      // Simulate registration without API call
+      const mockUser = {
+        id: '1',
+        name: name,
+        email: email
+      };
+      
+      // Store a dummy token to simulate authentication
+      localStorage.setItem('access_token', 'dummy-token');
+      setUser(mockUser);
+      
       toast({
         title: "Registration successful",
-        description: `Welcome, ${userInfo.name}!`,
+        description: `Welcome, ${name}!`,
       });
       navigate('/questionnaire');
     } catch (error) {
       console.error('Registration error:', error);
       toast({
         title: "Registration failed",
-        description: "Email might already be registered.",
+        description: "Something went wrong.",
         variant: "destructive",
       });
-      throw error;
     } finally {
       setIsLoading(false);
     }
@@ -94,8 +90,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logout = async () => {
     try {
-      await authService.logout();
+      // Simulate logout without API call
+      localStorage.removeItem('access_token');
       setUser(null);
+      
       toast({
         title: "Logged out",
         description: "You have been logged out successfully.",
@@ -116,7 +114,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       value={{
         user,
         isLoading,
-        isAuthenticated: !!user,
+        isAuthenticated: !!localStorage.getItem('access_token'),
         login,
         register,
         logout,

@@ -1,8 +1,6 @@
 
-import api from './api';
-
 interface Message {
-  role: string;  // Changed from 'user' | 'assistant' to string to match Pydantic model
+  role: string;
   content: string;
 }
 
@@ -35,15 +33,27 @@ interface ConversationsResponse {
 
 export const tutorService = {
   async sendMessage(request: ChatRequest): Promise<ChatResponse> {
-    // Add trailing slash for consistency
-    const response = await api.post<ChatResponse>('/api/tutor/chat/', request);
-    return response.data;
+    // Mock response without API call
+    return {
+      response: `This is a simulated response to: "${request.message}". API calls have been removed as requested.`,
+      conversationId: 'dummy-conversation-id'
+    };
   },
   
   async getConversations(): Promise<Conversation[]> {
-    // Add trailing slash for consistency
-    const response = await api.get<ConversationsResponse>('/api/tutor/conversations/');
-    return response.data.conversations;
+    // Mock conversations without API call
+    return [
+      {
+        id: '1',
+        title: 'Sample Conversation 1',
+        updatedAt: new Date().toISOString()
+      },
+      {
+        id: '2',
+        title: 'Sample Conversation 2',
+        updatedAt: new Date(Date.now() - 86400000).toISOString() // Yesterday
+      }
+    ];
   }
 };
 

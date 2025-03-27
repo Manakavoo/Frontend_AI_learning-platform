@@ -65,23 +65,11 @@ const ChatBot: React.FC<ChatBotProps> = ({ videoId }) => {
     setIsTyping(true);
     
     try {
-      const history = formatMessagesForAPI(messages);
-      
-      const videoContext = currentVideo ? {
-        id: currentVideo.id,
-        title: currentVideo.title,
-        description: currentVideo.description
-      } : undefined;
-      
-      const response = await tutorService.sendMessage({
-        message: userMessage.text,
-        history: history,
-        videoContext: videoContext
-      });
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
       const botMessage: Message = {
         id: Date.now().toString(),
-        text: response.response,
+        text: `This is a simulated response to: "${userMessage.text}". API calls have been removed as requested.`,
         sender: 'bot',
         timestamp: new Date()
       };

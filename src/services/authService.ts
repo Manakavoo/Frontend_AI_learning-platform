@@ -1,6 +1,4 @@
 
-import api from './api';
-
 interface RegisterData {
   name: string;
   email: string;
@@ -25,30 +23,37 @@ interface UserInfo {
 
 export const authService = {
   async register(data: RegisterData): Promise<AuthResponse> {
-    // Make sure the URL matches exactly what the backend expects, including the trailing slash
-    const response = await api.post<AuthResponse>('/api/auth/register/', data);
-    localStorage.setItem('access_token', response.data.access_token);
-    return response.data;
+    // Mock response without API call
+    const mockResponse: AuthResponse = {
+      access_token: 'dummy-token',
+      token_type: 'bearer'
+    };
+    localStorage.setItem('access_token', mockResponse.access_token);
+    return mockResponse;
   },
   
   async login(data: LoginData): Promise<AuthResponse> {
-    // Add trailing slash for consistency
-    const response = await api.post<AuthResponse>('/api/auth/login/', data);
-    localStorage.setItem('access_token', response.data.access_token);
-    return response.data;
+    // Mock response without API call
+    const mockResponse: AuthResponse = {
+      access_token: 'dummy-token',
+      token_type: 'bearer'
+    };
+    localStorage.setItem('access_token', mockResponse.access_token);
+    return mockResponse;
   },
   
   async getUserInfo(): Promise<UserInfo> {
-    // Add trailing slash for consistency
-    const response = await api.post<UserInfo>('/api/auth/me/');
-    return response.data;
+    // Mock user info without API call
+    return {
+      id: '1',
+      name: 'Demo User',
+      email: 'demo@example.com'
+    };
   },
   
   async logout(): Promise<{ success: boolean }> {
-    // Add trailing slash for consistency
-    const response = await api.post<{ success: boolean }>('/api/auth/logout/');
     localStorage.removeItem('access_token');
-    return response.data;
+    return { success: true };
   },
   
   isAuthenticated(): boolean {

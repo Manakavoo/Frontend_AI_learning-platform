@@ -26,10 +26,8 @@ const Register = () => {
     setIsLoading(true);
     
     try {
-      console.log("Attempting to register with:", { name, email, password });
       await register(name, email, password);
-      // If we reach here, registration was successful
-      console.log("Registration successful");
+      // Registration handled in AuthContext
     } catch (err) {
       console.error("Registration error:", err);
       setError("Registration failed. Please try again.");

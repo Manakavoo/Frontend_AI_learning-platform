@@ -74,7 +74,6 @@ const YouTubeSearch: React.FC = () => {
   };
 
   const handleVideoClick = (video: YouTubeVideo) => {
-    // In a real app, you would navigate to the video player page with the YouTube video ID
     navigate(`/video/${video.id}?title=${encodeURIComponent(video.title)}`);
   };
 

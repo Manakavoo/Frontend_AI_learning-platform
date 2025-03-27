@@ -3,28 +3,37 @@ import React, { useState, useEffect } from 'react';
 import Navigation from '../components/Navigation';
 import YouTubeSearch from '../components/YouTubeSearch';
 import VideoCard from '../components/VideoCard';
-import { sampleVideos, categories } from '../data/sampleData';
+import { getPopularVideosByCategory } from '../services/youtubeService';
+import { categories } from '../data/sampleData';
+import { YouTubeVideo } from '../services/youtubeService';
 
 const Home = () => {
-  const [activeCategory, setActiveCategory] = useState<string | null>(null);
-  const [filteredVideos, setFilteredVideos] = useState(sampleVideos);
+  const [activeCategory, setActiveCategory] = useState<string | null>('Machine Learning');
+  const [videos, setVideos] = useState<YouTubeVideo[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Simulate loading
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 1000);
-    return () => clearTimeout(timer);
+    // Load initial videos for Machine Learning
+    fetchVideosByCategory(activeCategory || 'Machine Learning');
   }, []);
 
   useEffect(() => {
     if (activeCategory) {
-      setFilteredVideos(sampleVideos.filter(video => video.category === activeCategory));
-    } else {
-      setFilteredVideos(sampleVideos);
+      fetchVideosByCategory(activeCategory);
     }
   }, [activeCategory]);
+
+  const fetchVideosByCategory = async (category: string) => {
+    setIsLoading(true);
+    try {
+      const videos = await getPopularVideosByCategory(category);
+      setVideos(videos);
+    } catch (error) {
+      console.error('Error fetching videos:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -49,27 +58,17 @@ const Home = () => {
             {/* Categories */}
             <div className="mb-8 overflow-x-auto pb-2 scrollbar-none">
               <div className="flex gap-2 min-w-max">
-                <button
-                  onClick={() => setActiveCategory(null)}
-                  className={`px-4 py-2 rounded-full text-sm font-medium transition-colors whitespace-nowrap ${
-                    activeCategory === null
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
-                  }`}
-                >
-                  All Categories
-                </button>
-                {categories.map(category => (
+                {['Machine Learning', 'Data Science', 'Web Development', 'Python', 'JavaScript'].map(category => (
                   <button
-                    key={category.id}
-                    onClick={() => setActiveCategory(category.name)}
+                    key={category}
+                    onClick={() => setActiveCategory(category)}
                     className={`px-4 py-2 rounded-full text-sm font-medium transition-colors whitespace-nowrap ${
-                      activeCategory === category.name
+                      activeCategory === category
                         ? 'bg-primary text-primary-foreground'
                         : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
                     }`}
                   >
-                    {category.name}
+                    {category}
                   </button>
                 ))}
               </div>
@@ -90,18 +89,28 @@ const Home = () => {
             ) : (
               <>
                 <h2 className="text-xl font-semibold mb-4">
-                  {activeCategory ? `${activeCategory} Videos` : 'Recent Videos'}
+                  {activeCategory ? `${activeCategory} Videos` : 'Recommended Videos'}
                 </h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                  {filteredVideos.map(video => (
-                    <VideoCard key={video.id} video={video} />
+                  {videos.map(video => (
+                    <VideoCard key={video.id} video={{
+                      id: video.id,
+                      title: video.title,
+                      description: video.description,
+                      thumbnail: video.thumbnail,
+                      author: video.channelTitle,
+                      views: video.viewCount,
+                      createdAt: video.publishedAt,
+                      category: activeCategory || 'Programming',
+                      duration: '10:30' // Default duration as it's not provided by the API
+                    }} />
                   ))}
                 </div>
               </>
             )}
             
             {/* Empty State */}
-            {!isLoading && filteredVideos.length === 0 && (
+            {!isLoading && videos.length === 0 && (
               <div className="text-center py-12">
                 <h3 className="text-lg font-medium mb-2">No videos found</h3>
                 <p className="text-muted-foreground">

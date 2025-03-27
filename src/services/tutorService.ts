@@ -12,8 +12,9 @@ interface VideoContext {
 
 interface ChatRequest {
   message: string;
-  history: Message[];
+  history?: Message[];
   videoContext?: VideoContext;
+  timestamp?: string;
 }
 
 interface ChatResponse {
@@ -34,8 +35,11 @@ interface ConversationsResponse {
 export const tutorService = {
   async sendMessage(request: ChatRequest): Promise<ChatResponse> {
     // Mock response without API call
+    const timestampPrefix = request.timestamp ? `[At ${request.timestamp}] ` : '';
+    const contextPrefix = request.videoContext ? `About "${request.videoContext.title}": ` : '';
+    
     return {
-      response: `This is a simulated response to: "${request.message}". API calls have been removed as requested.`,
+      response: `${timestampPrefix}${contextPrefix}This is a simulated response to: "${request.message}". API calls have been removed as requested.`,
       conversationId: 'dummy-conversation-id'
     };
   },

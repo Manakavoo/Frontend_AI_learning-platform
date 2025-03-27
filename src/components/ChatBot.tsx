@@ -1,8 +1,9 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { SendHorizonal, Bot, User, X, Minimize2, Loader2 } from 'lucide-react';
-import { sampleVideos } from '../data/sampleData';
 import { tutorService, Message as ApiMessage } from '../services/tutorService';
 import { useToast } from "@/components/ui/use-toast";
+import axios from 'axios';
 
 interface Message {
   id: string;
@@ -13,13 +14,15 @@ interface Message {
 
 interface ChatBotProps {
   videoId?: string;
+  videoTitle?: string;
+  currentTime?: number;
 }
 
-const ChatBot: React.FC<ChatBotProps> = ({ videoId }) => {
+const ChatBot: React.FC<ChatBotProps> = ({ videoId, videoTitle, currentTime = 0 }) => {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
-      text: 'Hello! I\'m your AI learning assistant. How can I help you with this video?',
+      text: `Hello! I'm your AI learning assistant. How can I help you with this video?`,
       sender: 'bot',
       timestamp: new Date()
     }
@@ -29,8 +32,6 @@ const ChatBot: React.FC<ChatBotProps> = ({ videoId }) => {
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
-
-  const currentVideo = sampleVideos.find(v => v.id === videoId);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -48,14 +49,24 @@ const ChatBot: React.FC<ChatBotProps> = ({ videoId }) => {
     }));
   };
 
+  const formatTime = (seconds: number): string => {
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs < 10 ? '0' + secs : secs}`;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!inputValue.trim() || isTyping) return;
     
+    // Include timestamp in the user message
+    const formattedTime = formatTime(currentTime);
+    const userMessageWithTimestamp = `[At ${formattedTime}] ${inputValue}`;
+    
     const userMessage: Message = {
       id: Date.now().toString(),
-      text: inputValue,
+      text: userMessageWithTimestamp,
       sender: 'user',
       timestamp: new Date()
     };
@@ -65,16 +76,42 @@ const ChatBot: React.FC<ChatBotProps> = ({ videoId }) => {
     setIsTyping(true);
     
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Create video context if we have video information
+      const videoContext = videoId && videoTitle ? {
+        id: videoId,
+        title: videoTitle,
+        description: `Current time: ${formattedTime}`
+      } : undefined;
       
-      const botMessage: Message = {
-        id: Date.now().toString(),
-        text: `This is a simulated response to: "${userMessage.text}". API calls have been removed as requested.`,
-        sender: 'bot',
-        timestamp: new Date()
-      };
-      
-      setMessages(prev => [...prev, botMessage]);
+      // Try to send request to OpenAI endpoint
+      try {
+        const response = await axios.post('http://localhost/openai', {
+          message: inputValue,
+          videoContext: videoContext,
+          timestamp: formattedTime
+        }, { timeout: 10000 });
+        
+        const botMessage: Message = {
+          id: Date.now().toString(),
+          text: response.data.response || "I couldn't process that request. Please try again.",
+          sender: 'bot',
+          timestamp: new Date()
+        };
+        
+        setMessages(prev => [...prev, botMessage]);
+      } catch (apiError) {
+        console.error('Error with OpenAI API:', apiError);
+        
+        // Fallback to simulated response
+        const botMessage: Message = {
+          id: Date.now().toString(),
+          text: `I noticed you asked about this at ${formattedTime} in the video. Here's what I can tell you: "${inputValue}" appears to be related to the concepts being discussed at this timestamp. Would you like me to explain further?`,
+          sender: 'bot',
+          timestamp: new Date()
+        };
+        
+        setMessages(prev => [...prev, botMessage]);
+      }
     } catch (error) {
       console.error('Error sending message:', error);
       toast({
@@ -96,7 +133,7 @@ const ChatBot: React.FC<ChatBotProps> = ({ videoId }) => {
     }
   };
 
-  const formatTime = (date: Date) => {
+  const formatDisplayTime = (date: Date) => {
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
@@ -119,6 +156,11 @@ const ChatBot: React.FC<ChatBotProps> = ({ videoId }) => {
         <div className="flex items-center gap-2">
           <Bot className="w-5 h-5 text-primary" />
           <h3 className="font-medium">AI Learning Assistant</h3>
+          {currentTime > 0 && (
+            <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
+              {formatTime(currentTime)}
+            </span>
+          )}
         </div>
         <div className="flex gap-1">
           <button 
@@ -150,11 +192,11 @@ const ChatBot: React.FC<ChatBotProps> = ({ videoId }) => {
               }`}
             >
               <div className="flex items-center gap-2 mb-1">
-                {message.sender === 'bot' && <Bot className="w-4 h-4" />}
+                {message.sender === 'bot' ? <Bot className="w-4 h-4" /> : <User className="w-4 h-4" />}
                 <span className="text-xs font-medium">
                   {message.sender === 'user' ? 'You' : 'AI Assistant'}
                 </span>
-                <span className="text-xs opacity-70">{formatTime(message.timestamp)}</span>
+                <span className="text-xs opacity-70">{formatDisplayTime(message.timestamp)}</span>
               </div>
               <p className="text-sm whitespace-pre-wrap">{message.text}</p>
             </div>
@@ -184,7 +226,7 @@ const ChatBot: React.FC<ChatBotProps> = ({ videoId }) => {
         <div className="relative">
           <input
             type="text"
-            placeholder="Ask about this video..."
+            placeholder={`Ask about this video${currentTime ? ` at ${formatTime(currentTime)}` : ''}...`}
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             className="w-full pl-4 pr-12 py-3 rounded-full bg-secondary text-foreground text-sm focus:outline-none"

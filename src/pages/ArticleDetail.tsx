@@ -21,7 +21,7 @@ interface Article {
 const ARTICLES: Article[] = [
   {
     id: '1',
-    title: 'Understanding Machine Learning: A Beginner's Guide',
+    title: "Understanding Machine Learning: A Beginner's Guide",
     excerpt: 'Demystifying machine learning concepts and techniques for beginners with practical examples and implementations.',
     content: `
       # Understanding Machine Learning: A Beginner's Guide

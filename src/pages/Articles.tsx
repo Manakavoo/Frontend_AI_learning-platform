@@ -318,7 +318,7 @@ const ARTICLES: Article[] = [
 
       ### Setting Up the Environment
 
-      ```python
+      \`\`\`
       # Install necessary packages
       # pip install torch torchvision matplotlib numpy
 
@@ -329,11 +329,11 @@ const ARTICLES: Article[] = [
       import torchvision.transforms as transforms
       import matplotlib.pyplot as plt
       import numpy as np
-      ```
+      \`\`\`
 
       ### Data Preparation
 
-      ```python
+      \`\`\`
       # Define transformations
       transform = transforms.Compose([
           transforms.Resize((224, 224)),
@@ -351,11 +351,11 @@ const ARTICLES: Article[] = [
                                             download=True, transform=transform)
       testloader = torch.utils.data.DataLoader(testset, batch_size=32,
                                               shuffle=False, num_workers=2)
-      ```
+      \`\`\`
 
       ### Model Architecture
 
-      ```python
+      \`\`\`
       # Define CNN model
       class SimpleCNN(nn.Module):
           def __init__(self):
@@ -382,11 +382,11 @@ const ARTICLES: Article[] = [
       model = SimpleCNN()
       device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
       model.to(device)
-      ```
+      \`\`\`
 
       ### Training Loop
 
-      ```python
+      \`\`\`
       # Define loss function and optimizer
       criterion = nn.CrossEntropyLoss()
       optimizer = optim.Adam(model.parameters(), lr=0.001)
@@ -433,11 +433,11 @@ const ARTICLES: Article[] = [
 
       # Train the model
       train_losses, val_losses = train_model(model, criterion, optimizer, num_epochs=10)
-      ```
+      \`\`\`
 
       ### Evaluation
 
-      ```python
+      \`\`\`
       # Evaluate model accuracy
       correct = 0
       total = 0
@@ -451,11 +451,11 @@ const ARTICLES: Article[] = [
               correct += (predicted == labels).sum().item()
 
       print(f'Accuracy on test images: {100 * correct / total:.2f}%')
-      ```
+      \`\`\`
 
       ### Visualization
 
-      ```python
+      \`\`\`
       # Visualize training progress
       plt.figure(figsize=(10, 5))
       plt.plot(train_losses, label='Training Loss')
@@ -465,11 +465,11 @@ const ARTICLES: Article[] = [
       plt.legend()
       plt.title('Training and Validation Loss')
       plt.show()
-      ```
+      \`\`\`
 
       ### Deployment Preparation
 
-      ```python
+      \`\`\`
       # Save the model
       torch.save(model.state_dict(), 'cifar_model.pth')
 
@@ -496,7 +496,7 @@ const ARTICLES: Article[] = [
               _, predicted = torch.max(outputs, 1)
               
           return predicted.item()
-      ```
+      \`\`\`
 
       ## Common Challenges and Solutions
 

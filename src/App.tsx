@@ -1,4 +1,5 @@
 
+import React from 'react'; // Make sure React is imported
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -18,10 +19,9 @@ import AITutor from "./pages/AITutor";
 import Community from "./pages/Community";
 import NotFound from "./pages/NotFound";
 import Quiz from "./pages/Quiz";
-// Removing Articles imports to fix build errors
-// import Articles from "./pages/Articles";
-// import ArticleDetail from "./pages/ArticleDetail";
+// Articles routes are removed to fix build errors
 
+// Create a new QueryClient instance
 const queryClient = new QueryClient();
 
 // We need this wrapper because AuthProvider needs to be inside Router
@@ -40,27 +40,29 @@ const AppRoutes = () => {
         <Route path="/ai-tutor" element={<AITutor />} />
         <Route path="/community" element={<Community />} />
         <Route path="/quiz" element={<Quiz />} />
-        {/* Removing Articles routes to fix build errors */}
-        {/* <Route path="/articles" element={<Articles />} /> */}
-        {/* <Route path="/articles/:id" element={<ArticleDetail />} /> */}
         <Route path="*" element={<NotFound />} />
       </Routes>
     </AuthProvider>
   );
 };
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <ThemeProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <AppRoutes />
-        </BrowserRouter>
-      </TooltipProvider>
-    </ThemeProvider>
-  </QueryClientProvider>
-);
+// Make sure App is a proper React functional component
+const App = () => {
+  return (
+    <React.StrictMode>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <AppRoutes />
+            </BrowserRouter>
+          </TooltipProvider>
+        </ThemeProvider>
+      </QueryClientProvider>
+    </React.StrictMode>
+  );
+};
 
 export default App;

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, Home, BookOpen, Settings, Video, Award, Users, Bot, PieChart, Brain, Newspaper } from 'lucide-react';
+import { Menu, X, Home, BookOpen, Settings, Video, Award, Users, Bot, PieChart, Brain } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { useNavigate } from 'react-router-dom';
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -27,7 +27,6 @@ const Navigation = () => {
     { to: "/ai-tutor", label: "AI Tutor", icon: Bot },
     { to: "/community", label: "Community", icon: Users },
     { to: "/dashboard", label: "Dashboard", icon: PieChart },
-    { to: "/articles", label: "Articles", icon: Newspaper },
     { to: "/settings", label: "Settings", icon: Settings },
   ];
 

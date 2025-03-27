@@ -1,111 +1,93 @@
-
 import React, { useState } from 'react';
-import { useNavigate, useLocation, Link } from 'react-router-dom';
-import { 
-  Menu, X, Home, BookOpen, BarChart3, Settings, 
-  MessageSquare, Users, LogOut, BookMarked, BrainCircuit, FileText
-} from 'lucide-react';
-import { useTheme } from '../contexts/ThemeContext';
-import { useMobile } from '../hooks/use-mobile';
+import { Link, useLocation } from 'react-router-dom';
+import { Menu, X, Home, BookOpen, Settings, Video, Award, Users, Bot, PieChart, Brain, Newspaper } from 'lucide-react';
+import { Button } from "@/components/ui/button";
+import { useNavigate } from 'react-router-dom';
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Separator } from "@/components/ui/separator";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { useIsMobile } from "../hooks/use-mobile"; // Fixed import name
+
+interface NavLink {
+  to: string;
+  label: string;
+  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+}
 
 const Navigation = () => {
-  const navigate = useNavigate();
+  const [open, setOpen] = useState(false);
   const location = useLocation();
-  const { theme } = useTheme();
-  const isMobile = useMobile();
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const navigate = useNavigate();
+  const isMobile = useIsMobile();
 
-  const menuItems = [
-    { name: 'Home', icon: <Home className="w-5 h-5" />, path: '/home' },
-    { name: 'AI Tutor', icon: <BrainCircuit className="w-5 h-5" />, path: '/ai-tutor' },
-    { name: 'Dashboard', icon: <BarChart3 className="w-5 h-5" />, path: '/dashboard' },
-    { name: 'Community', icon: <Users className="w-5 h-5" />, path: '/community' },
-    { name: 'Articles', icon: <FileText className="w-5 h-5" />, path: '/articles' },
-    { name: 'Quiz', icon: <BookMarked className="w-5 h-5" />, path: '/quiz' },
-    { name: 'Settings', icon: <Settings className="w-5 h-5" />, path: '/settings' },
+  const navLinks: NavLink[] = [
+    { to: "/home", label: "Home", icon: Home },
+    { to: "/video/123", label: "Videos", icon: Video },
+    { to: "/quiz", label: "Quizzes", icon: Award },
+    { to: "/ai-tutor", label: "AI Tutor", icon: Bot },
+    { to: "/community", label: "Community", icon: Users },
+    { to: "/dashboard", label: "Dashboard", icon: PieChart },
+    { to: "/articles", label: "Articles", icon: Newspaper },
+    { to: "/settings", label: "Settings", icon: Settings },
   ];
 
-  const handleLogout = () => {
-    localStorage.removeItem('access_token');
-    navigate('/');
+  const active = (path: string) => {
+    return location.pathname === path ? "bg-secondary" : "";
   };
 
-  const toggleSidebar = () => {
-    setIsSidebarOpen(!isSidebarOpen);
-  };
+  const renderNavLink = (link: NavLink) => (
+    <Link to={link.to} key={link.to} className={`flex items-center space-x-2 p-2 rounded-md hover:bg-secondary ${active(link.to)}`}>
+      <link.icon className="h-4 w-4" />
+      <span>{link.label}</span>
+    </Link>
+  );
+
+  const renderMobileMenu = () => (
+    <Sheet open={open} onOpenChange={setOpen}>
+      <SheetTrigger asChild>
+        <Button variant="ghost" size="sm" className="md:hidden rounded-full">
+          <Menu className="h-5 w-5" />
+        </Button>
+      </SheetTrigger>
+      <SheetContent side="left" className="w-64 p-0 pt-6 border-r">
+        <ScrollArea className="h-full">
+          <div className="flex flex-col space-y-1 px-2">
+            {navLinks.map(renderNavLink)}
+            <Separator className="my-2" />
+            <Button variant="outline" className="w-full justify-start font-normal">
+              <Settings className="h-4 w-4 mr-2" />
+              Settings
+            </Button>
+          </div>
+        </ScrollArea>
+      </SheetContent>
+    </Sheet>
+  );
+
+  const renderDesktopMenu = () => (
+    <div className="hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0 z-50 md:bg-background border-r">
+      <div className="flex h-16 items-center px-4">
+        <Link to="/" className="flex items-center space-x-2">
+          <Brain className="h-6 w-6 text-primary" />
+          <span className="font-bold">LearnAI</span>
+        </Link>
+      </div>
+      <ScrollArea className="flex-1">
+        <div className="flex flex-col space-y-1 px-2">
+          {navLinks.map(renderNavLink)}
+          <Separator className="my-2" />
+          <Button variant="outline" className="w-full justify-start font-normal">
+            <Settings className="h-4 w-4 mr-2" />
+            Settings
+          </Button>
+        </div>
+      </ScrollArea>
+    </div>
+  );
 
   return (
     <>
-      {/* Mobile top bar */}
-      <div className="md:hidden fixed top-0 left-0 right-0 h-16 bg-background border-b border-border z-50 px-4 flex items-center justify-between">
-        <div className="flex items-center">
-          <button 
-            onClick={toggleSidebar}
-            className="p-2 rounded-md text-foreground hover:bg-secondary"
-          >
-            <Menu className="w-6 h-6" />
-          </button>
-          <Link to="/" className="ml-2 font-bold text-lg text-primary">LearnAI</Link>
-        </div>
-      </div>
-
-      {/* Sidebar Overlay */}
-      {isMobile && isSidebarOpen && (
-        <div 
-          className="fixed inset-0 bg-black/50 z-40"
-          onClick={toggleSidebar}
-        />
-      )}
-
-      {/* Sidebar */}
-      <div className={`fixed top-0 left-0 h-full w-64 bg-card border-r border-border z-50 transition-transform duration-300 transform ${
-        isMobile ? (isSidebarOpen ? 'translate-x-0' : '-translate-x-full') : 'translate-x-0'
-      }`}>
-        <div className="flex flex-col h-full">
-          {/* Logo */}
-          <div className="h-16 border-b border-border flex items-center px-6 justify-between">
-            <Link to="/" className="font-bold text-xl text-primary">LearnAI</Link>
-            {isMobile && (
-              <button 
-                onClick={toggleSidebar}
-                className="p-1.5 rounded-md text-foreground hover:bg-secondary"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            )}
-          </div>
-          
-          {/* Nav Links */}
-          <div className="flex-1 py-6 px-3 space-y-1 overflow-y-auto">
-            {menuItems.map((item) => (
-              <Link
-                key={item.name}
-                to={item.path}
-                onClick={() => isMobile && setIsSidebarOpen(false)}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium text-sm transition-colors ${
-                  location.pathname === item.path
-                    ? 'bg-primary text-primary-foreground'
-                    : 'hover:bg-secondary/80'
-                }`}
-              >
-                {item.icon}
-                <span>{item.name}</span>
-              </Link>
-            ))}
-          </div>
-          
-          {/* Logout button */}
-          <div className="p-3 border-t border-border">
-            <button
-              onClick={handleLogout}
-              className="flex items-center gap-3 px-3 py-2.5 w-full rounded-lg font-medium text-sm hover:bg-secondary transition-colors"
-            >
-              <LogOut className="w-5 h-5" />
-              <span>Logout</span>
-            </button>
-          </div>
-        </div>
-      </div>
+      {isMobile ? renderMobileMenu() : renderDesktopMenu()}
     </>
   );
 };

@@ -1,4 +1,3 @@
-
 export interface YouTubeVideo {
   id: string;
   title: string;
@@ -7,6 +6,16 @@ export interface YouTubeVideo {
   channelTitle: string;
   publishedAt: string;
   viewCount: string;
+}
+
+export interface Video {
+  id: string;
+  title: string;
+  description: string;
+  thumbnail: string;
+  channelName: string;
+  views: string;
+  published: string;
 }
 
 const API_KEY = 'AIzaSyBrgPFYKcDmx7hehAleaDPYXKFgqR6ELZo';
@@ -153,5 +162,27 @@ export const getVideoById = async (videoId: string): Promise<YouTubeVideo | null
   } catch (error) {
     console.error('Error fetching video by ID:', error);
     return null;
+  }
+};
+
+// Add getSuggestions function to youtubeService
+export const getSuggestions = async (query: string): Promise<string[]> => {
+  if (!query) return [];
+  
+  try {
+    // For now, return hardcoded suggestions based on query
+    // In a real implementation, this would call an API
+    const suggestions = [
+      `${query} tutorial`,
+      `${query} for beginners`,
+      `learn ${query}`,
+      `${query} course`,
+      `${query} examples`
+    ];
+    
+    return suggestions;
+  } catch (error) {
+    console.error('Error fetching suggestions:', error);
+    return [];
   }
 };

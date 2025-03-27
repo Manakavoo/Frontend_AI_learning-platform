@@ -18,8 +18,9 @@ import AITutor from "./pages/AITutor";
 import Community from "./pages/Community";
 import NotFound from "./pages/NotFound";
 import Quiz from "./pages/Quiz";
-import Articles from "./pages/Articles";
-import ArticleDetail from "./pages/ArticleDetail";
+// Removing Articles imports to fix build errors
+// import Articles from "./pages/Articles";
+// import ArticleDetail from "./pages/ArticleDetail";
 
 const queryClient = new QueryClient();
 
@@ -39,8 +40,9 @@ const AppRoutes = () => {
         <Route path="/ai-tutor" element={<AITutor />} />
         <Route path="/community" element={<Community />} />
         <Route path="/quiz" element={<Quiz />} />
-        <Route path="/articles" element={<Articles />} />
-        <Route path="/articles/:id" element={<ArticleDetail />} />
+        {/* Removing Articles routes to fix build errors */}
+        {/* <Route path="/articles" element={<Articles />} /> */}
+        {/* <Route path="/articles/:id" element={<ArticleDetail />} /> */}
         <Route path="*" element={<NotFound />} />
       </Routes>
     </AuthProvider>

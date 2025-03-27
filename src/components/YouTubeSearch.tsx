@@ -10,6 +10,7 @@ const YouTubeSearch: React.FC = () => {
   const [results, setResults] = useState<YouTubeVideo[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(false);
   const [showResults, setShowResults] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
@@ -20,8 +21,12 @@ const YouTubeSearch: React.FC = () => {
       if (query.trim().length > 1) {
         const data = await getSuggestions(query);
         setSuggestions(data);
+        if (isFocused) {
+          setShowSuggestions(true);
+        }
       } else {
         setSuggestions([]);
+        setShowSuggestions(false);
       }
     };
     
@@ -30,14 +35,14 @@ const YouTubeSearch: React.FC = () => {
     }, 300);
     
     return () => clearTimeout(debounce);
-  }, [query]);
+  }, [query, isFocused]);
 
   // Handle clicks outside of search component
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
         setIsFocused(false);
-        setShowResults(false);
+        setShowSuggestions(false);
       }
     };
     
@@ -50,6 +55,7 @@ const YouTubeSearch: React.FC = () => {
     
     setIsLoading(true);
     setShowResults(true);
+    setShowSuggestions(false); // Hide suggestions when search is executed
     
     try {
       const videos = await searchVideos(searchQuery);
@@ -63,6 +69,7 @@ const YouTubeSearch: React.FC = () => {
 
   const handleSuggestionClick = (suggestion: string) => {
     setQuery(suggestion);
+    setShowSuggestions(false);
     handleSearch(suggestion);
   };
 
@@ -71,6 +78,7 @@ const YouTubeSearch: React.FC = () => {
     setSuggestions([]);
     setResults([]);
     setShowResults(false);
+    setShowSuggestions(false);
   };
 
   const handleVideoClick = (video: YouTubeVideo) => {
@@ -87,10 +95,16 @@ const YouTubeSearch: React.FC = () => {
           className="input-field pl-12 pr-10 py-3.5 w-full rounded-full bg-secondary text-foreground"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          onFocus={() => setIsFocused(true)}
+          onFocus={() => {
+            setIsFocused(true);
+            if (suggestions.length > 0) {
+              setShowSuggestions(true);
+            }
+          }}
           onKeyDown={(e) => {
             if (e.key === 'Enter') {
               handleSearch();
+              setShowSuggestions(false);
             }
           }}
         />
@@ -108,7 +122,7 @@ const YouTubeSearch: React.FC = () => {
       </div>
 
       {/* Suggestions */}
-      {isFocused && suggestions.length > 0 && (
+      {isFocused && showSuggestions && suggestions.length > 0 && (
         <div className="absolute mt-2 w-full bg-card rounded-xl shadow-lg border border-border overflow-hidden z-20 animate-fade-in">
           <div className="py-2">
             <div className="px-4 py-2 text-sm font-medium text-muted-foreground">Suggestions</div>

@@ -1,12 +1,13 @@
+
 import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, Home, BookOpen, Settings, Video, Award, Users, Bot, PieChart, Brain } from 'lucide-react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Menu, X, Home, Settings, Video, Award, Users, Bot, PieChart, Brain, LogOut } from 'lucide-react';
 import { Button } from "@/components/ui/button";
-import { useNavigate } from 'react-router-dom';
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useIsMobile } from "../hooks/use-mobile"; // Fixed import name
+import { useIsMobile } from "../hooks/use-mobile";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 interface NavLink {
   to: string;
@@ -20,15 +21,22 @@ const Navigation = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
 
+  // Rearranged according to the required order
   const navLinks: NavLink[] = [
     { to: "/home", label: "Home", icon: Home },
-    { to: "/video/123", label: "Videos", icon: Video },
-    { to: "/quiz", label: "Quizzes", icon: Award },
-    { to: "/ai-tutor", label: "AI Tutor", icon: Bot },
-    { to: "/community", label: "Community", icon: Users },
     { to: "/dashboard", label: "Dashboard", icon: PieChart },
+    { to: "/ai-tutor", label: "AI Tutor", icon: Bot },
+    { to: "/quiz", label: "Quizzes", icon: Award },
+    { to: "/community", label: "Community", icon: Users },
     { to: "/settings", label: "Settings", icon: Settings },
   ];
+
+  const handleLogout = () => {
+    // In a real app, you would call your logout function from authService here
+    // For now, we'll just redirect to the login page
+    console.log("Logging out...");
+    navigate('/');
+  };
 
   const active = (path: string) => {
     return location.pathname === path ? "bg-secondary" : "";
@@ -53,9 +61,13 @@ const Navigation = () => {
           <div className="flex flex-col space-y-1 px-2">
             {navLinks.map(renderNavLink)}
             <Separator className="my-2" />
-            <Button variant="outline" className="w-full justify-start font-normal">
-              <Settings className="h-4 w-4 mr-2" />
-              Settings
+            <Button 
+              variant="outline" 
+              className="w-full justify-start font-normal text-destructive hover:text-destructive"
+              onClick={handleLogout}
+            >
+              <LogOut className="h-4 w-4 mr-2" />
+              Logout
             </Button>
           </div>
         </ScrollArea>
@@ -75,9 +87,13 @@ const Navigation = () => {
         <div className="flex flex-col space-y-1 px-2">
           {navLinks.map(renderNavLink)}
           <Separator className="my-2" />
-          <Button variant="outline" className="w-full justify-start font-normal">
-            <Settings className="h-4 w-4 mr-2" />
-            Settings
+          <Button 
+            variant="outline" 
+            className="w-full justify-start font-normal text-destructive hover:text-destructive"
+            onClick={handleLogout}
+          >
+            <LogOut className="h-4 w-4 mr-2" />
+            Logout
           </Button>
         </div>
       </ScrollArea>

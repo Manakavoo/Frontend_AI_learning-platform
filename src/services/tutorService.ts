@@ -34,30 +34,66 @@ interface ConversationsResponse {
 
 export const tutorService = {
   async sendMessage(request: ChatRequest): Promise<ChatResponse> {
-    // Mock response without API call
-    const timestampPrefix = request.timestamp ? `[At ${request.timestamp}] ` : '';
-    const contextPrefix = request.videoContext ? `About "${request.videoContext.title}": ` : '';
-    
-    return {
-      response: `${timestampPrefix}${contextPrefix}This is a simulated response to: "${request.message}". API calls have been removed as requested.`,
-      conversationId: 'dummy-conversation-id'
-    };
+    try {
+      const response = await fetch('/tutor', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(request),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to get response from tutor API');
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Tutor API error:', error);
+      
+      // Fallback response
+      const timestampPrefix = request.timestamp ? `[At ${request.timestamp}] ` : '';
+      const contextPrefix = request.videoContext ? `About "${request.videoContext.title}": ` : '';
+      
+      return {
+        response: `${timestampPrefix}${contextPrefix}This is a simulated response to: "${request.message}". The tutor API is currently unavailable.`,
+        conversationId: 'dummy-conversation-id'
+      };
+    }
   },
   
   async getConversations(): Promise<Conversation[]> {
-    // Mock conversations without API call
-    return [
-      {
-        id: '1',
-        title: 'Sample Conversation 1',
-        updatedAt: new Date().toISOString()
-      },
-      {
-        id: '2',
-        title: 'Sample Conversation 2',
-        updatedAt: new Date(Date.now() - 86400000).toISOString() // Yesterday
+    try {
+      const response = await fetch('/tutor/conversations', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to get conversations from API');
       }
-    ];
+
+      const data = await response.json();
+      return data.conversations || [];
+    } catch (error) {
+      console.error('Conversations API error:', error);
+      
+      // Mock conversations as fallback
+      return [
+        {
+          id: '1',
+          title: 'Sample Conversation 1',
+          updatedAt: new Date().toISOString()
+        },
+        {
+          id: '2',
+          title: 'Sample Conversation 2',
+          updatedAt: new Date(Date.now() - 86400000).toISOString() // Yesterday
+        }
+      ];
+    }
   }
 };
 

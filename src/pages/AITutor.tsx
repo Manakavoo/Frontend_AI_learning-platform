@@ -27,6 +27,25 @@ const AITutor: React.FC = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
+  const suggestions = [
+    {
+      text: "Create a roadmap for data science career",
+      details: "Help me create a comprehensive learning roadmap for becoming a data scientist from scratch"
+    },
+    {
+      text: "Prepare a weekly study schedule",
+      details: "I want to learn machine learning. Can you help me create a balanced weekly study schedule?"
+    },
+    {
+      text: "Explain neural networks simply",
+      details: "Can you explain how neural networks work in simple terms with examples?"
+    },
+    {
+      text: "Project ideas for portfolio",
+      details: "What are some beginner-friendly data science projects I can build for my portfolio?"
+    }
+  ];
+
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
@@ -263,32 +282,18 @@ const AITutor: React.FC = () => {
                 </div>
               ) : (
                 <div className="mt-6 pt-6 border-t border-border">
-                  <h3 className="font-medium mb-2">Popular Topics</h3>
-                  <div className="flex flex-wrap gap-2">
-                    <button 
-                      onClick={() => setInputValue("Help me learn programming")}
-                      className="px-3 py-1.5 bg-secondary rounded-full text-sm hover:bg-secondary/80 transition-colors"
-                    >
-                      Programming
-                    </button>
-                    <button 
-                      onClick={() => setInputValue("I need a data science roadmap")}
-                      className="px-3 py-1.5 bg-secondary rounded-full text-sm hover:bg-secondary/80 transition-colors"
-                    >
-                      Data Science
-                    </button>
-                    <button 
-                      onClick={() => setInputValue("How to learn machine learning?")}
-                      className="px-3 py-1.5 bg-secondary rounded-full text-sm hover:bg-secondary/80 transition-colors"
-                    >
-                      Machine Learning
-                    </button>
-                    <button 
-                      onClick={() => setInputValue("What project should I build to practice web development?")}
-                      className="px-3 py-1.5 bg-secondary rounded-full text-sm hover:bg-secondary/80 transition-colors"
-                    >
-                      Web Development
-                    </button>
+                  <h3 className="font-medium mb-3">Try These Learning Paths</h3>
+                  <div className="space-y-3">
+                    {suggestions.map((suggestion, index) => (
+                      <div 
+                        key={index}
+                        onClick={() => setInputValue(suggestion.details)}
+                        className="p-3 bg-secondary/50 rounded-lg hover:bg-secondary cursor-pointer transition-colors border border-border/50"
+                      >
+                        <p className="font-medium text-sm">{suggestion.text}</p>
+                        <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{suggestion.details}</p>
+                      </div>
+                    ))}
                   </div>
                 </div>
               )}

@@ -33,10 +33,10 @@ const Dashboard = () => {
 
   // Stats cards
   const stats = [
-    { title: 'Completed Courses', value: userProgress.completedCourses, total: userProgress.totalCourses },
+    { title: 'Watched Videos', value: 24, total: 45 },
     { title: 'Learning Hours', value: userProgress.totalHours, unit: 'hrs' },
     { title: 'Daily Streak', value: userProgress.streak, unit: 'days' },
-    { title: 'Certificates', value: userProgress.certificates }
+    { title: 'Topics Explored', value: 12 }
   ];
 
   return (

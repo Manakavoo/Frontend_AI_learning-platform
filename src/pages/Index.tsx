@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight, BookOpen, Brain, ChartLine } from 'lucide-react';
@@ -6,9 +5,7 @@ import { ArrowRight, BookOpen, Brain, ChartLine } from 'lucide-react';
 const Index = () => {
   const navigate = useNavigate();
   const [isLoaded, setIsLoaded] = useState(false);
-  // const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
-
 
   useEffect(() => {
     // Simulate loading effect
@@ -55,13 +52,18 @@ const Index = () => {
   const testimonials = [
     {
       quote: "LearnAI has transformed how I approach learning new skills. The personalized approach helped me master concepts I struggled with for years.",
-      name: "Sarah Johnson",
+      name: "Manakavoo",
       role: "Software Developer"
     },
     {
       quote: "As an educator, I'm impressed by how LearnAI adapts to different learning styles. My students have shown remarkable improvement.",
-      name: "Michael Rodriguez",
+      name: "Wilson",
       role: "Professor"
+    },
+    {
+      quote: "The AI-powered learning path creation is revolutionary. It helped me understand complex data science concepts in a structured way.",
+      name: "Abubacker",
+      role: "Data Scientist"
     }
   ];
 
@@ -85,21 +87,15 @@ const Index = () => {
               <button onClick={() => navigate('/signup')} className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90">Sign Up</button>
             </div>
             <div className="md:hidden">
-              {/* <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="text-gray-700">
-                <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"></path>
-                </svg>
-              </button> */}
               <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} 
                       className="text-gray-700"
                       aria-label="Toggle mobile menu"
-                      aria-expanded={mobileMenuOpen ? "true" : "false"} // Converts boolean to "true"/"false"
+                      aria-expanded={mobileMenuOpen ? "true" : "false"}
                     >
                       <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"></path>
                       </svg>
                 </button>
-
             </div>
           </div>
         </div>
@@ -136,7 +132,6 @@ const Index = () => {
             </h1>
             
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-12">
-              Our AI-driven system creates personalized learning paths just for you!
               Master new skills with adaptive content tailored to your unique learning style.
             </p>
             
@@ -239,7 +234,7 @@ const Index = () => {
       <section id="testimonials" className="py-16 px-6 bg-white">
         <div className="max-w-6xl mx-auto">
           <h2 className="text-3xl font-bold text-center mb-12">What Our Users Say</h2>
-          <div className="grid md:grid-cols-2 gap-8">
+          <div className="grid md:grid-cols-3 gap-8">
             {testimonials.map((testimonial, index) => (
               <div key={index} className="bg-white rounded-xl shadow-lg p-6">
                 <div className="flex gap-1 mb-4">
@@ -274,24 +269,17 @@ const Index = () => {
 
       {/* Footer */}
       <footer className="bg-gray-900 text-gray-300 py-12 px-6">
-        <div className="max-w-6xl mx-auto grid md:grid-cols-4 gap-8">
+        <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-8">
           <div>
             <h3 className="font-bold text-white mb-4">Quick Links</h3>
             <ul className="space-y-2">
-              <li><a href="#" className="hover:text-white">About</a></li>
-              <li><a href="#" className="hover:text-white">Courses</a></li>
+              <li><a href="#" className="hover:text-white">About Us</a></li>
               <li><a href="#" className="hover:text-white">Contact</a></li>
-              <li><a href="#" className="hover:text-white">Blog</a></li>
-            </ul>
-          </div>
-          <div>
-            <h3 className="font-bold text-white mb-4">Legal</h3>
-            <ul className="space-y-2">
               <li><a href="#" className="hover:text-white">Privacy Policy</a></li>
               <li><a href="#" className="hover:text-white">Terms of Service</a></li>
             </ul>
           </div>
-          <div className="md:col-span-2">
+          <div>
             <h3 className="font-bold text-white mb-4">Subscribe to Our Newsletter</h3>
             <p className="mb-4">Get the latest updates and learning resources delivered to your inbox.</p>
             <div className="flex gap-2">

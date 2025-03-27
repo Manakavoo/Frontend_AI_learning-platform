@@ -17,6 +17,9 @@ import Settings from "./pages/Settings";
 import AITutor from "./pages/AITutor";
 import Community from "./pages/Community";
 import NotFound from "./pages/NotFound";
+import Quiz from "./pages/Quiz";
+import Articles from "./pages/Articles";
+import ArticleDetail from "./pages/ArticleDetail";
 
 const queryClient = new QueryClient();
 
@@ -35,6 +38,9 @@ const AppRoutes = () => {
         <Route path="/settings" element={<Settings />} />
         <Route path="/ai-tutor" element={<AITutor />} />
         <Route path="/community" element={<Community />} />
+        <Route path="/quiz" element={<Quiz />} />
+        <Route path="/articles" element={<Articles />} />
+        <Route path="/articles/:id" element={<ArticleDetail />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </AuthProvider>

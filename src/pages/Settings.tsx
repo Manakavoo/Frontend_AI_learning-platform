@@ -1,19 +1,29 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Navigation from '../components/Navigation';
 import { useTheme } from '../contexts/ThemeContext';
 import { User, Moon, Sun, Palette, Bell, Shield, LogOut } from 'lucide-react';
 
 const Settings = () => {
   const { theme, setTheme } = useTheme();
-  const [userName, setUserName] = useState('John Doe');
-  const [email, setEmail] = useState('john.doe@example.com');
+  // Get user data from localStorage (as we're not using real auth)
+  const [userName, setUserName] = useState(() => localStorage.getItem('user_name') || 'User');
+  const [email, setEmail] = useState(() => localStorage.getItem('user_email') || 'user@example.com');
   const [notifications, setNotifications] = useState({
     emailUpdates: true,
     newCourses: false,
     learningReminders: true,
     communityActivity: false
   });
+
+  useEffect(() => {
+    // Try to get user data from local storage on component mount
+    const storedName = localStorage.getItem('user_name');
+    const storedEmail = localStorage.getItem('user_email');
+    
+    if (storedName) setUserName(storedName);
+    if (storedEmail) setEmail(storedEmail);
+  }, []);
 
   const handleNotificationChange = (key: keyof typeof notifications) => {
     setNotifications(prev => ({

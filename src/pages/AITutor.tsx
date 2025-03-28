@@ -56,12 +56,13 @@ const AITutor: React.FC = () => {
       setIsLoadingConversations(true);
       try {
         const conversationsData = await tutorService.getConversations();
-        setConversations(conversationsData);
+        console.log("Fetched conversations:", conversationsData);
+        setConversations(conversationsData || []);
       } catch (error) {
         console.error('Error fetching conversations:', error);
         toast({
           title: "Error",
-          description: "Failed to fetch conversations.",
+          description: error.message || "Failed to fetch conversations.",
           variant: "destructive",
         });
       } finally {
@@ -109,17 +110,22 @@ const AITutor: React.FC = () => {
         history: history
       });
       
-      console.log("AI Tutor response:", response);
+      console.log("AI Tutor raw response:", response);
+      
+      // Handle different response formats
+      const responseText = typeof response === 'string' 
+        ? response 
+        : response.response || response.text || JSON.stringify(response);
       
       const botMessage: Message = {
         id: Date.now().toString(),
-        text: response.response,
+        text: responseText,
         sender: 'bot',
         timestamp: new Date()
       };
       
       setMessages(prev => [...prev, botMessage]);
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error sending message:', error);
       toast({
         title: "Error",

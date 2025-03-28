@@ -93,10 +93,12 @@ const ChatBot: React.FC<ChatBotProps> = ({ videoId, videoTitle, currentTime = 0 
             timestamp: formattedTime
           });
           
-          if (response.data && response.data.response) {
+          console.log("Response from /openai endpoint:", response);
+          
+          if (response.data && (response.data.response || response.data.text)) {
             const botMessage: Message = {
               id: Date.now().toString(),
-              text: response.data.response,
+              text: response.data.response || response.data.text,
               sender: 'bot',
               timestamp: new Date()
             };
@@ -116,16 +118,25 @@ const ChatBot: React.FC<ChatBotProps> = ({ videoId, videoTitle, currentTime = 0 
       
       const history = formatMessagesForAPI(messages);
       
-      const response = await tutorService.sendMessage({
+      const chatRequest = {
         message: inputValue,
         history: history,
         videoContext: videoContext,
         timestamp: formattedTime
-      });
+      };
+      
+      console.log("Sending to /tutor:", chatRequest);
+      const response = await tutorService.sendMessage(chatRequest);
+      console.log("Raw response from /tutor:", response);
+      
+      // Handle different response formats
+      const responseText = typeof response === 'string' 
+        ? response 
+        : response.response || response.text || JSON.stringify(response);
       
       const botMessage: Message = {
         id: Date.now().toString(),
-        text: response.response,
+        text: responseText,
         sender: 'bot',
         timestamp: new Date()
       };
@@ -135,7 +146,7 @@ const ChatBot: React.FC<ChatBotProps> = ({ videoId, videoTitle, currentTime = 0 
       console.error('Error sending message:', error);
       toast({
         title: "Error",
-        description: "Failed to get response from AI Assistant.",
+        description: error.message || "Failed to get response from AI Assistant.",
         variant: "destructive",
       });
       

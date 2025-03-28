@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import Navigation from '../components/Navigation';
 import { Bot, User, SendHorizonal, Loader2 } from 'lucide-react';
@@ -98,10 +99,17 @@ const AITutor: React.FC = () => {
     try {
       const history = formatMessagesForAPI(messages);
       
+      console.log("Sending AI Tutor message:", {
+        message: userMessage.text,
+        history: history
+      });
+      
       const response = await tutorService.sendMessage({
         message: userMessage.text,
         history: history
       });
+      
+      console.log("AI Tutor response:", response);
       
       const botMessage: Message = {
         id: Date.now().toString(),
@@ -111,11 +119,11 @@ const AITutor: React.FC = () => {
       };
       
       setMessages(prev => [...prev, botMessage]);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error sending message:', error);
       toast({
         title: "Error",
-        description: "Failed to get response from AI Tutor.",
+        description: error.message || "Failed to get response from AI Tutor.",
         variant: "destructive",
       });
       

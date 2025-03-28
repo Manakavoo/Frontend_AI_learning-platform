@@ -37,7 +37,9 @@ interface ConversationsResponse {
 export const tutorService = {
   async sendMessage(request: ChatRequest): Promise<ChatResponse> {
     try {
+      console.log("Sending request to tutorService:", request);
       const response = await api.post('/tutor', request);
+      console.log("Response from tutorService:", response.data);
 
       if (!response.data) {
         throw new Error('Failed to get response from tutor API');
@@ -47,20 +49,16 @@ export const tutorService = {
     } catch (error) {
       console.error('Tutor API error:', error);
       
-      // Fallback response
-      const timestampPrefix = request.timestamp ? `[At ${request.timestamp}] ` : '';
-      const contextPrefix = request.videoContext ? `About "${request.videoContext.title}": ` : '';
-      
-      return {
-        response: `${timestampPrefix}${contextPrefix}This is a simulated response to: "${request.message}". The tutor API is currently unavailable.`,
-        conversationId: 'dummy-conversation-id'
-      };
+      // More descriptive error message
+      throw new Error('Failed to connect to the tutor service. Please check your network connection and try again.');
     }
   },
   
   async getConversations(): Promise<Conversation[]> {
     try {
+      console.log("Fetching conversations from tutorService");
       const response = await api.get('/tutor/conversations');
+      console.log("Conversations response:", response.data);
 
       if (!response.data) {
         throw new Error('Failed to get conversations from API');
@@ -70,19 +68,8 @@ export const tutorService = {
     } catch (error) {
       console.error('Conversations API error:', error);
       
-      // Mock conversations as fallback
-      return [
-        {
-          id: '1',
-          title: 'Sample Conversation 1',
-          updatedAt: new Date().toISOString()
-        },
-        {
-          id: '2',
-          title: 'Sample Conversation 2',
-          updatedAt: new Date(Date.now() - 86400000).toISOString() // Yesterday
-        }
-      ];
+      // More descriptive error message
+      throw new Error('Failed to fetch conversations. Please check your network connection and try again.');
     }
   }
 };

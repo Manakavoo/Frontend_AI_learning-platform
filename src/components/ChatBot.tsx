@@ -62,7 +62,7 @@ const ChatBot: React.FC<ChatBotProps> = ({ videoId, videoTitle, currentTime = 0 
     
     // Include timestamp in the user message
     const formattedTime = formatTime(currentTime);
-    const userMessageWithTimestamp = `[At ${formattedTime}] ${inputValue}`;
+    const userMessageWithTimestamp = inputValue;
     
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -83,35 +83,54 @@ const ChatBot: React.FC<ChatBotProps> = ({ videoId, videoTitle, currentTime = 0 
         description: `Current time: ${formattedTime}`
       } : undefined;
       
-      // Try to send request to OpenAI endpoint
-      try {
-        const response = await api.post('/openai', {
-          message: inputValue,
-          videoContext: videoContext,
-          timestamp: formattedTime
-        });
-        
-        const botMessage: Message = {
-          id: Date.now().toString(),
-          text: response.data.response || "I couldn't process that request. Please try again.",
-          sender: 'bot',
-          timestamp: new Date()
-        };
-        
-        setMessages(prev => [...prev, botMessage]);
-      } catch (apiError) {
-        console.error('Error with OpenAI API:', apiError);
-        
-        // Fallback to simulated response
-        const botMessage: Message = {
-          id: Date.now().toString(),
-          text: `I noticed you asked about this at ${formattedTime} in the video. Here's what I can tell you: "${inputValue}" appears to be related to the concepts being discussed at this timestamp. Would you like me to explain further?`,
-          sender: 'bot',
-          timestamp: new Date()
-        };
-        
-        setMessages(prev => [...prev, botMessage]);
+      // First try the direct API endpoint for video context
+      if (videoContext) {
+        try {
+          console.log("Sending request to /openai endpoint with video context");
+          const response = await api.post('/openai', {
+            message: inputValue,
+            videoContext: videoContext,
+            timestamp: formattedTime
+          });
+          
+          if (response.data && response.data.response) {
+            const botMessage: Message = {
+              id: Date.now().toString(),
+              text: response.data.response,
+              sender: 'bot',
+              timestamp: new Date()
+            };
+            
+            setMessages(prev => [...prev, botMessage]);
+            setIsTyping(false);
+            return;
+          }
+        } catch (apiError) {
+          console.error('Error with OpenAI API:', apiError);
+          // Continue to fallback
+        }
       }
+      
+      // Fallback to the tutor service
+      console.log("Falling back to /tutor endpoint");
+      
+      const history = formatMessagesForAPI(messages);
+      
+      const response = await tutorService.sendMessage({
+        message: inputValue,
+        history: history,
+        videoContext: videoContext,
+        timestamp: formattedTime
+      });
+      
+      const botMessage: Message = {
+        id: Date.now().toString(),
+        text: response.response,
+        sender: 'bot',
+        timestamp: new Date()
+      };
+      
+      setMessages(prev => [...prev, botMessage]);
     } catch (error) {
       console.error('Error sending message:', error);
       toast({

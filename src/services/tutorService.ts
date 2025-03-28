@@ -46,9 +46,13 @@ export const tutorService = {
         throw new Error('Empty response from tutor API');
       }
 
-      // Return the data as is without additional validation
-      // This will work even if the response format is slightly different
-      return response.data;
+      // If the API returns data in a different format, transform it to match our expected format
+      const chatResponse: ChatResponse = {
+        response: response.data.response || response.data.text || response.data.toString(),
+        conversationId: response.data.conversationId || 'temp-id'
+      };
+
+      return chatResponse;
     } catch (error) {
       console.error('Tutor API error:', error);
       
@@ -82,17 +86,23 @@ export const tutorService = {
       // Handle different response formats
       if (Array.isArray(response.data)) {
         // If the API returns an array directly
-        return response.data;
+        return response.data as Conversation[];
       } else if (response.data.conversations) {
         // If the API returns an object with a conversations property
-        return response.data.conversations;
+        return response.data.conversations as Conversation[];
       } else {
         // If the API returns an object that needs to be transformed
         // This is a fallback case
         console.warn('Unexpected response format:', response.data);
-        return Object.values(response.data).filter(item => 
-          typeof item === 'object' && item !== null
-        );
+        const transformedData = Object.values(response.data)
+          .filter(item => typeof item === 'object' && item !== null)
+          .map(item => ({
+            id: (item as any).id || 'unknown',
+            title: (item as any).title || 'Unknown Conversation',
+            updatedAt: (item as any).updatedAt || new Date().toISOString()
+          }));
+          
+        return transformedData as Conversation[];
       }
     } catch (error) {
       console.error('Conversations API error:', error);

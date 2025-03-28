@@ -1,8 +1,7 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import Navigation from '../components/Navigation';
 import { Bot, User, SendHorizonal, Loader2 } from 'lucide-react';
-import { tutorService, Message as ApiMessage } from '../services/tutorService';
+import { tutorService, Message as ApiMessage, ChatResponse } from '../services/tutorService';
 import { useToast } from "@/components/ui/use-toast";
 
 interface Message {
@@ -105,21 +104,16 @@ const AITutor: React.FC = () => {
         history: history
       });
       
-      const response = await tutorService.sendMessage({
+      const response: ChatResponse = await tutorService.sendMessage({
         message: userMessage.text,
         history: history
       });
       
       console.log("AI Tutor raw response:", response);
       
-      // Handle different response formats
-      const responseText = typeof response === 'string' 
-        ? response 
-        : response.response || response.text || JSON.stringify(response);
-      
       const botMessage: Message = {
         id: Date.now().toString(),
-        text: responseText,
+        text: response.response,
         sender: 'bot',
         timestamp: new Date()
       };

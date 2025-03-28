@@ -1,7 +1,6 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { SendHorizonal, Bot, User, X, Minimize2, Loader2 } from 'lucide-react';
-import { tutorService, Message as ApiMessage } from '../services/tutorService';
+import { tutorService, Message as ApiMessage, ChatResponse } from '../services/tutorService';
 import { useToast } from "@/components/ui/use-toast";
 import api from '../services/api';
 
@@ -60,7 +59,6 @@ const ChatBot: React.FC<ChatBotProps> = ({ videoId, videoTitle, currentTime = 0 
     
     if (!inputValue.trim() || isTyping) return;
     
-    // Include timestamp in the user message
     const formattedTime = formatTime(currentTime);
     const userMessageWithTimestamp = inputValue;
     
@@ -76,14 +74,12 @@ const ChatBot: React.FC<ChatBotProps> = ({ videoId, videoTitle, currentTime = 0 
     setIsTyping(true);
     
     try {
-      // Create video context if we have video information
       const videoContext = videoId && videoTitle ? {
         id: videoId,
         title: videoTitle,
         description: `Current time: ${formattedTime}`
       } : undefined;
       
-      // First try the direct API endpoint for video context
       if (videoContext) {
         try {
           console.log("Sending request to /openai endpoint with video context");
@@ -95,10 +91,12 @@ const ChatBot: React.FC<ChatBotProps> = ({ videoId, videoTitle, currentTime = 0 
           
           console.log("Response from /openai endpoint:", response);
           
-          if (response.data && (response.data.response || response.data.text)) {
+          if (response.data) {
+            const responseText = response.data.response || "No response from the server.";
+            
             const botMessage: Message = {
               id: Date.now().toString(),
-              text: response.data.response || response.data.text,
+              text: responseText,
               sender: 'bot',
               timestamp: new Date()
             };
@@ -113,7 +111,6 @@ const ChatBot: React.FC<ChatBotProps> = ({ videoId, videoTitle, currentTime = 0 
         }
       }
       
-      // Fallback to the tutor service
       console.log("Falling back to /tutor endpoint");
       
       const history = formatMessagesForAPI(messages);
@@ -126,17 +123,12 @@ const ChatBot: React.FC<ChatBotProps> = ({ videoId, videoTitle, currentTime = 0 
       };
       
       console.log("Sending to /tutor:", chatRequest);
-      const response = await tutorService.sendMessage(chatRequest);
+      const response: ChatResponse = await tutorService.sendMessage(chatRequest);
       console.log("Raw response from /tutor:", response);
-      
-      // Handle different response formats
-      const responseText = typeof response === 'string' 
-        ? response 
-        : response.response || response.text || JSON.stringify(response);
       
       const botMessage: Message = {
         id: Date.now().toString(),
-        text: responseText,
+        text: response.response,
         sender: 'bot',
         timestamp: new Date()
       };

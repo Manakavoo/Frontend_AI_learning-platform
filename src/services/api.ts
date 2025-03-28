@@ -1,8 +1,8 @@
 
 import axios from 'axios';
 
-// Get backend URL from environment variable, with a default fallback
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://127.0.0.1:8000';
+// Use the provided base URL
+const BACKEND_URL = 'https://openai-chat-backend-6wz1.onrender.com';
 
 // Create axios instance with base URL
 const api = axios.create({

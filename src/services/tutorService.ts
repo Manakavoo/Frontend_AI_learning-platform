@@ -1,4 +1,6 @@
 
+import api from './api';
+
 interface Message {
   role: string;
   content: string;
@@ -35,19 +37,13 @@ interface ConversationsResponse {
 export const tutorService = {
   async sendMessage(request: ChatRequest): Promise<ChatResponse> {
     try {
-      const response = await fetch('/tutor', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(request),
-      });
+      const response = await api.post('/tutor', request);
 
-      if (!response.ok) {
+      if (!response.data) {
         throw new Error('Failed to get response from tutor API');
       }
 
-      return await response.json();
+      return response.data;
     } catch (error) {
       console.error('Tutor API error:', error);
       
@@ -64,19 +60,13 @@ export const tutorService = {
   
   async getConversations(): Promise<Conversation[]> {
     try {
-      const response = await fetch('/tutor/conversations', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        }
-      });
+      const response = await api.get('/tutor/conversations');
 
-      if (!response.ok) {
+      if (!response.data) {
         throw new Error('Failed to get conversations from API');
       }
 
-      const data = await response.json();
-      return data.conversations || [];
+      return response.data.conversations || [];
     } catch (error) {
       console.error('Conversations API error:', error);
       

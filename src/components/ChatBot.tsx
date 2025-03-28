@@ -3,7 +3,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { SendHorizonal, Bot, User, X, Minimize2, Loader2 } from 'lucide-react';
 import { tutorService, Message as ApiMessage } from '../services/tutorService';
 import { useToast } from "@/components/ui/use-toast";
-import axios from 'axios';
+import api from '../services/api';
 
 interface Message {
   id: string;
@@ -85,11 +85,11 @@ const ChatBot: React.FC<ChatBotProps> = ({ videoId, videoTitle, currentTime = 0 
       
       // Try to send request to OpenAI endpoint
       try {
-        const response = await axios.post('http://localhost/openai', {
+        const response = await api.post('/openai', {
           message: inputValue,
           videoContext: videoContext,
           timestamp: formattedTime
-        }, { timeout: 10000 });
+        });
         
         const botMessage: Message = {
           id: Date.now().toString(),

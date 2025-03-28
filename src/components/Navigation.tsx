@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Menu, X, Home, Settings, Video, Award, Users, Bot, PieChart, Brain, LogOut } from 'lucide-react';
+import { Menu, X, Home, Settings, Video, Award, Users, Bot, PieChart, Brain, LogOut, FileCode } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
@@ -29,6 +29,7 @@ const Navigation = () => {
     { to: "/quiz", label: "Quizzes", icon: Award },
     { to: "/community", label: "Community", icon: Users },
     { to: "/settings", label: "Settings", icon: Settings },
+    { to: "/api-format", label: "API Docs", icon: FileCode },
   ];
 
   const handleLogout = () => {

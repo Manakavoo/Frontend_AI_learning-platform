@@ -80,11 +80,11 @@ const Index = () => {
               <a href="#features" className="text-gray-700 hover:text-primary">Features</a>
               <a href="#how-it-works" className="text-gray-700 hover:text-primary">Courses</a>
               <a href="#testimonials" className="text-gray-700 hover:text-primary">Developers</a>
-              {/* <a href="#pricing" className="text-gray-700 hover:text-primary">Pricing</a> */}
+              <a href="/api-format" className="text-gray-700 hover:text-primary">API Docs</a>
             </div>
             <div className="hidden md:flex items-center space-x-4">
               <button onClick={() => navigate('/login')} className="px-4 py-2 text-primary hover:text-primary/80">Login</button>
-              <button onClick={() => navigate('/signup')} className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90">Sign Up</button>
+              <button onClick={() => navigate('/register')} className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90">Sign Up</button>
             </div>
             <div className="md:hidden">
               <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} 
@@ -105,9 +105,9 @@ const Index = () => {
             <a href="#how-it-works" className="block px-3 py-2 text-gray-700 hover:text-primary">Features</a>
             <a href="#courses" className="block px-3 py-2 text-gray-700 hover:text-primary">Working</a>
             <a href="#testimonials" className="block px-3 py-2 text-gray-700 hover:text-primary">Developers</a>
-            {/* <a href="#pricing" className="block px-3 py-2 text-gray-700 hover:text-primary">Pricing</a> */}
+            <a href="/api-format" className="block px-3 py-2 text-gray-700 hover:text-primary">API Docs</a>
             <button onClick={() => navigate('/login')} className="block w-full px-3 py-2 text-left text-gray-700 hover:text-primary">Login</button>
-            <button onClick={() => navigate('/login')} className="block w-full px-3 py-2 text-left text-white bg-primary rounded-lg hover:bg-primary/90">Sign Up</button>
+            <button onClick={() => navigate('/register')} className="block w-full px-3 py-2 text-left text-white bg-primary rounded-lg hover:bg-primary/90">Sign Up</button>
           </div>
         </div>
       </nav>
@@ -259,7 +259,7 @@ const Index = () => {
           <h2 className="text-3xl font-bold mb-6">Ready to Transform Your Learning Journey?</h2>
           <p className="text-xl mb-8">Join 10,000+ learners advancing their careers with AI-powered education</p>
           <button 
-            onClick={() => navigate('/signup')}
+            onClick={() => navigate('/register')}
             className="px-8 py-3 bg-white text-primary hover:bg-gray-100 rounded-lg font-medium text-lg transition-colors"
           >
             Start Learning for Free
